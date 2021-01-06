@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/exchange_table"
+        android:icon="@drawable/ic_baseline_home_24"
+        android:title="Home"/>
+
+    <item
+        android:id="@+id/exchange_act"
+        android:icon="@drawable/ic_iconfinder_retweet_115642"
+        android:title="Exchange"/>
+
+    <item
+        android:id="@+id/history"
+        android:icon="@drawable/ic_baseline_folder_24"
+        android:title="History"/>
+
+    <item
+        android:id="@+id/notification"
+        android:icon="@drawable/ic_baseline_notifications_24"
+        android:title="Notification"/>
+
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/ic_user"
+        android:title="Profile"/>
+
+</menu>
