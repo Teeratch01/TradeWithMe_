@@ -33,7 +33,6 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins_bold"
             android:gravity="center_horizontal"
-            android:text="TextView"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="25sp" />
@@ -92,7 +91,7 @@
                 android:id="@+id/usarate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                />
         </TableRow>
 
         <TableRow
@@ -110,7 +109,7 @@
                 android:id="@+id/ukrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                 />
         </TableRow>
 
         <TableRow
@@ -128,7 +127,7 @@
                 android:id="@+id/eurate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                 />
         </TableRow>
 
         <TableRow
@@ -146,7 +145,7 @@
                 android:id="@+id/japanrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                />
 
         </TableRow>
 
@@ -165,7 +164,7 @@
                 android:id="@+id/korearate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                />
         </TableRow>
 
         <TableRow
@@ -183,7 +182,7 @@
                 android:id="@+id/hongkongrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                 />
         </TableRow>
     </TableLayout>
 

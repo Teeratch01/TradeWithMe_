@@ -6,6 +6,11 @@
     app:startDestination="@id/exchange_table">
 
     <fragment
+        android:id="@+id/exchange_table"
+        android:name="com.example.TradewithMe.Exchange_table"
+        android:label="fragment_exchange_table"
+        tools:layout="@layout/fragment_exchange_table" />
+    <fragment
         android:id="@+id/exchange_act"
         android:name="com.example.TradewithMe.Exchange_act"
         android:label="fragment_exchange_act"
@@ -25,9 +30,4 @@
         android:name="com.example.TradewithMe.Profile"
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" />
-    <fragment
-        android:id="@+id/exchange_table"
-        android:name="com.example.TradewithMe.Exchange_table"
-        android:label="fragment_exchange_table"
-        tools:layout="@layout/fragment_exchange_table" />
 </navigation>
