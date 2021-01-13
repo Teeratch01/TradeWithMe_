@@ -3,5 +3,23 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <string-array name="have_currency">
+        <item>USD</item>
+        <item>GBP</item>
+        <item>EUR</item>
+        <item>JPY</item>
+        <item>KRW</item>
+        <item>HKD</item>
+    </string-array>
+
+    <string-array name="want_currency">
+        <item>USD</item>
+        <item>GBP</item>
+        <item>EUR</item>
+        <item>JPY</item>
+        <item>KRW</item>
+        <item>HKD</item>
+    </string-array>
+
 
 </resources>
