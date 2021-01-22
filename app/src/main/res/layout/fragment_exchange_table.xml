@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Exchange_table">
+    tools:context=".Exchange_table"
+    android:background="#466078">
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -14,13 +15,14 @@
         app:layout_constraintBottom_toTopOf="@+id/tableLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/bg_day">
 
         <TextView
             android:id="@+id/textView7"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins_bold"
+            android:fontFamily="@font/roboto_bold"
             android:gravity="center_horizontal"
             android:text="Daily Exchange Rate"
             android:textAlignment="center"
@@ -31,7 +33,7 @@
             android:id="@+id/Date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins_bold"
+            android:fontFamily="@font/roboto"
             android:gravity="center_horizontal"
             android:textAlignment="center"
             android:textColor="@android:color/black"
@@ -60,8 +62,13 @@
                 android:gravity="center_horizontal"
                 android:text="Currency"
                 android:textAlignment="center"
-                android:textColor="@android:color/black"
-                android:textSize="18sp" />
+                android:textColor="#e1e8ed"
+                android:textSize="18sp"
+                android:background="#657786"
+                android:fontFamily="@font/roboto"
+                android:layout_marginBottom="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp" />
 
             <TextView
                 android:id="@+id/textView15"
@@ -70,8 +77,13 @@
                 android:gravity="center_horizontal"
                 android:text="Rates"
                 android:textAlignment="center"
-                android:textColor="@android:color/black"
-                android:textSize="18sp" />
+                android:textColor="#e1e8ed"
+                android:textSize="18sp"
+                android:background="#407088"
+                android:fontFamily="@font/roboto"
+                android:layout_marginBottom="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp" />
 
         </TableRow>
 
@@ -85,12 +97,29 @@
                 android:layout_height="wrap_content"
                 android:text=" USD\n United State"
                 android:padding="6dp"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
                 />
 
             <TextView
                 android:id="@+id/usarate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="24.5dp"
                 />
         </TableRow>
 
@@ -103,12 +132,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" GBP\n United Kingdom"
-                android:padding="6dp" />
+                android:fontFamily="@font/roboto"
+                android:padding="6dp"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:textColor="@color/black"/>/>
 
             <TextView
                 android:id="@+id/ukrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:paddingTop="5.75dp"
+                android:paddingBottom="25dp"
                  />
         </TableRow>
 
@@ -121,12 +167,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" EUR\n European Union"
-                android:padding="6dp" />
+                android:fontFamily="@font/roboto"
+                android:padding="6dp"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:textColor="@color/black"/>
 
             <TextView
                 android:id="@+id/eurate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:paddingTop="5.75dp"
+                android:paddingBottom="25dp"
                  />
         </TableRow>
 
@@ -139,12 +202,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" JPY\n Japan"
-                android:padding="6dp"  />
+                android:fontFamily="@font/roboto"
+                android:padding="6dp"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:textColor="@color/black" />
 
             <TextView
                 android:id="@+id/japanrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:paddingTop="5.75dp"
+                android:paddingBottom="25dp"
                 />
 
         </TableRow>
@@ -158,12 +238,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" KRW\n South Korea"
-                android:padding="6dp" />
+                android:fontFamily="@font/roboto"
+                android:padding="6dp"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:textColor="@color/black"/>
 
             <TextView
                 android:id="@+id/korearate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:paddingTop="5.75dp"
+                android:paddingBottom="25dp"
                 />
         </TableRow>
 
@@ -176,12 +273,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" HKD\n Hongkon"
-                android:padding="6dp" />
+                android:fontFamily="@font/roboto"
+                android:padding="6dp"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:textColor="@color/black"/>
 
             <TextView
                 android:id="@+id/hongkongrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:background="#e8e8e8"
+                android:layout_marginBottom="1dp"
+                android:layout_marginVertical="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:paddingTop="5.75dp"
+                android:paddingBottom="25dp"
                  />
         </TableRow>
     </TableLayout>

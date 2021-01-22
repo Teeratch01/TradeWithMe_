@@ -245,7 +245,6 @@ public class Exchange_act extends Fragment {
                         holder.itemView.setVisibility(View.VISIBLE);
                         holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-
                     }
                     else {
                         holder.itemView.setVisibility(View.GONE);
@@ -269,9 +268,7 @@ public class Exchange_act extends Fragment {
 
                 return new ExchangeViewHolder(view);
             }
-
-
-
+            
         };
         firebaseRecyclerAdapter.startListening();
 

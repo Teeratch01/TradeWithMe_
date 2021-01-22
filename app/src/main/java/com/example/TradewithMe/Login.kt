@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentActivity
 import com.facebook.*
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
@@ -15,11 +14,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
-import com.google.firebase.auth.FirebaseAuth.getInstance
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -45,6 +42,7 @@ class Login : AppCompatActivity() {
     private var user_info:User?= null
     private var user_faccebook: User? =null
 
+
     //Google login Variable
     var signin: SignInButton? = null
     var gso: GoogleSignInOptions? = null
@@ -69,35 +67,41 @@ class Login : AppCompatActivity() {
             startActivity(intent)
         })
 
+        val forgotPassword_btn :TextView = findViewById(R.id.forgot_password)
+       forgotPassword_btn.setOnClickListener(View.OnClickListener {
+           val goto_forgotpassword = Intent(this,ForgotPassword::class.java)
+           startActivity(goto_forgotpassword)
+       })
 
-            button2?.setOnClickListener(View.OnClickListener {
-                val email = editTextTextEmailAddress?.getText().toString()
-                val pwd = editTextTextPassword?.getText().toString()
-                if (email.isEmpty()) {
-                    editTextTextEmailAddress?.setError("Please enter your email")
-                    editTextTextEmailAddress?.requestFocus()
-                } else if (pwd.isEmpty()) {
-                    editTextTextPassword?.setError("Please enter your password")
-                    editTextTextPassword?.requestFocus()
-                } else if (email.isEmpty() && pwd.isEmpty()) {
-                    Toast.makeText(this@Login, "Please fill in the blank", Toast.LENGTH_SHORT).show()
-                }
 
-                /* check email and password are correct that you register in Firebase or not*/
-                else if (!(email.isEmpty() && pwd.isEmpty())) {
-                    mFirebaseAuth?.signInWithEmailAndPassword(email, pwd)
-                            ?.addOnCompleteListener(this@Login) { task ->
-                                if (!task.isSuccessful) {
-                                    Toast.makeText(this@Login, "Log In Error, Please try Again", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    val intToDashboard = Intent(this@Login, Navigation::class.java)
-                                    startActivity(intToDashboard)
-                                }
+        button2?.setOnClickListener(View.OnClickListener {
+            val email = editTextTextEmailAddress?.getText().toString()
+            val pwd = editTextTextPassword?.getText().toString()
+            if (email.isEmpty()) {
+                editTextTextEmailAddress?.setError("Please enter your email")
+                editTextTextEmailAddress?.requestFocus()
+            } else if (pwd.isEmpty()) {
+                editTextTextPassword?.setError("Please enter your password")
+                editTextTextPassword?.requestFocus()
+            } else if (email.isEmpty() && pwd.isEmpty()) {
+                Toast.makeText(this@Login, "Please fill in the blank", Toast.LENGTH_SHORT).show()
+            }
+
+            /* check email and password are correct that you register in Firebase or not*/
+            else if (!(email.isEmpty() && pwd.isEmpty())) {
+                mFirebaseAuth?.signInWithEmailAndPassword(email, pwd)
+                        ?.addOnCompleteListener(this@Login) { task ->
+                            if (!task.isSuccessful) {
+                                Toast.makeText(this@Login, "Log In Error, Please try Again", Toast.LENGTH_SHORT).show()
+                            } else {
+                                val intToDashboard = Intent(this@Login, Navigation::class.java)
+                                startActivity(intToDashboard)
                             }
-                } else {
-                    Toast.makeText(this@Login, "Error Occurred!", Toast.LENGTH_SHORT).show()
-                }
-            })
+                        }
+            } else {
+                Toast.makeText(this@Login, "Error Occurred!", Toast.LENGTH_SHORT).show()
+            }
+        })
 
         //Facebook Login
         OnClickButtonListtener()
