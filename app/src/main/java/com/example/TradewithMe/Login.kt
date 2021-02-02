@@ -14,12 +14,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.FirebaseError
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import java.util.*
 
 
@@ -118,7 +118,7 @@ class Login : AppCompatActivity() {
 
 //            val firstname = signInAccount.givenName
 //            val lastname = signInAccount.familyName
-//            val email = signInAccount.email
+//            val email = signInAccount.ema
 //
 //            user_info = User(
 //                    firstname, lastname, email
@@ -142,7 +142,19 @@ class Login : AppCompatActivity() {
                 Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
                 if (user_info!=null)
                 {
-                    FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_info)
+                    FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString()))
+                            {
+                                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_info)
+                            }
+                        }
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
+
+                    })
+
                 }
 //                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_google)
                 val intent = Intent(this@Login, Navigation::class.java)
@@ -190,11 +202,27 @@ class Login : AppCompatActivity() {
                     val firstname: String? = signInAccount.givenName
                     val lastname: String? = signInAccount.familyName
                     val email: String? = signInAccount.email
+                    val phone_number:String = "The user have to edit first"
                     user_info = User(
-                            firstname, lastname, email
+                            firstname, lastname, email,phone_number
                     )
                     Log.d("userinfo", user_info.toString())
-                    FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().currentUser?.uid.toString()).setValue(user_info)
+
+                    FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString()))
+                            {
+                                FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().currentUser?.uid.toString()).setValue(user_info)
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
+
+
+                    })
+
                     Toast.makeText(applicationContext, "Your Google Account is Connected to our Application", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(applicationContext, Navigation::class.java))
                 }.addOnFailureListener { }
@@ -216,7 +244,6 @@ class Login : AppCompatActivity() {
                     //                            FirebaseUser user = auth.getCurrentUser();
                     openProfile()
 //                    loadUserProfile(token)
-
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -243,10 +270,11 @@ class Login : AppCompatActivity() {
             val lastname = name.split(" ")[1]
             val email: String = `object`.getString("email")
             val uid = `object`.getString("id")
+            val phone_number : String = "The user have to edit first"
 
 
             user_info = User(
-                    firstname, lastname, email
+                    firstname, lastname, email ,phone_number
             )
 
 //            val auth :FirebaseAuth = FirebaseAuth.getInstance()
@@ -280,7 +308,6 @@ class Login : AppCompatActivity() {
         request.executeAsync()
 
     }
-
     companion object {
         private const val TAG = "FBAUTH"
         private const val EMAIL = "email"
@@ -288,7 +315,6 @@ class Login : AppCompatActivity() {
     }
     override fun onStart() {
         super.onStart()
-
         mFirebaseAuth?.addAuthStateListener(mAuthStateListener!!)
         if (auth.currentUser != null) {
             openProfile()
@@ -302,11 +328,6 @@ class Login : AppCompatActivity() {
         {
             mFirebaseAuth?.removeAuthStateListener(mAuthStateListener!!)
         }
-//        if (mAuthStateFacebook!=null)
-//        {
-//            FirebaseAuth.getInstance().removeAuthStateListener(mAuthStateFacebook!!)
-//        }
-
 
     }
 }

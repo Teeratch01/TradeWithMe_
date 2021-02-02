@@ -4,86 +4,127 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:tag="Profile_page"
+    android:id="@+id/profile_page"
     tools:context=".Profile">
 
     <!-- TODO: Update blank fragment layout -->
 
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="266dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="117dp"
-            android:layout_height="110dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="288dp"
-            android:src="@drawable/profile" />
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_profile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_width="269dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/first_lastname"
-                android:layout_width="231dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="17dp"
-                android:layout_marginTop="23dp"
-                android:layout_marginEnd="130dp"
-                android:layout_marginBottom="14dp" />
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="409dp"
+                android:layout_height="229dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
-                android:id="@+id/firstname_text"
-                android:layout_width="228dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="17dp"
-                android:layout_marginEnd="201dp"
-                android:layout_marginBottom="12dp"
-                android:text="Firstname:" />
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profile_image_beforechat"
+                    android:layout_width="118dp"
+                    android:layout_height="110dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="288dp"
+                    android:src="@drawable/profile"
+                    app:civ_border_color="@color/black"
+                    app:civ_border_width="2dp" />
 
-            <TextView
-                android:id="@+id/lastname_text"
-                android:layout_width="226dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="17dp"
-                android:layout_marginEnd="204dp"
-                android:layout_marginBottom="11dp"
-                android:text="Lastname:" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/email_text"
-                android:layout_width="232dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="17dp"
-                android:layout_marginEnd="210dp"
-                android:layout_marginBottom="277dp"
-                android:text="Email:" />
+                    <TextView
+                        android:id="@+id/first_lastname"
+                        android:layout_width="231dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginTop="23dp"
+                        android:layout_marginEnd="130dp"
+                        android:layout_marginBottom="14dp"
+                        android:textColor="@color/black"
+                        android:textSize="20dp" />
+
+                    <TextView
+                        android:id="@+id/firstname_text"
+                        android:layout_width="228dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginEnd="201dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="Firstname:"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/lastname_text"
+                        android:layout_width="226dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginEnd="204dp"
+                        android:layout_marginBottom="11dp"
+                        android:text="Lastname:"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/email_text"
+                        android:layout_width="232dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginEnd="210dp"
+                        android:layout_marginBottom="11dp"
+                        android:text="Email:"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/phone_number_text"
+                        android:layout_width="262dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginEnd="210dp"
+                        android:layout_marginBottom="11dp"
+                        android:text="Phone number : "
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:id="@+id/edit_profile_btn"
+                        android:layout_width="156dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginEnd="210dp"
+                        android:text="Edit Profile >" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/logout"
+                android:layout_width="335dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="39dp"
+                android:layout_marginTop="217dp"
+                android:layout_marginEnd="39dp"
+                android:layout_marginBottom="197dp"
+                android:text="logout"
+                android:backgroundTint="#c19277"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
         </LinearLayout>
-    </LinearLayout>
 
-    <Button
-        android:id="@+id/logout"
-        android:layout_width="335dp"
-        android:layout_height="52dp"
-        android:layout_marginStart="39dp"
-        android:layout_marginTop="217dp"
-        android:layout_marginEnd="39dp"
-        android:layout_marginBottom="197dp"
-        android:text="logout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,47 +5,89 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/textView9"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="7dp"
-        android:layout_marginTop="16dp"
-        android:text="Amont"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="@+id/amount_ill"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/amount_ill"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_marginEnd="21dp"
-        android:text="TextView"
-        android:textColor="@color/black"
-        app:layout_constraintEnd_toStartOf="@+id/rate_ill"
-        app:layout_constraintTop_toBottomOf="@+id/textView9" />
-
-    <TextView
-        android:id="@+id/textView11"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
-        android:text="Rates"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="@+id/rate_ill"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/rate_ill"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_marginEnd="60dp"
-        android:text="TextView"
-        android:textColor="@color/black"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView11" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile_image_list_bfchat"
+            android:layout_width="55dp"
+            android:layout_height="49dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="9dp"
+            android:src="@drawable/profile"
+            app:civ_border_width="2dp" />
+
+        <TextView
+            android:id="@+id/name_surname"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="26dp"
+            android:text=""
+
+            android:textColor="@color/black" />
+
+        <LinearLayout
+            android:layout_width="99dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="99dp"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Amount"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/amount_ill"
+                android:layout_width="99dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="13dp"
+                android:layout_marginEnd="21dp"
+                android:gravity="center"
+                android:text=""
+                android:textColor="@color/black" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Rates"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/rate_ill"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="13dp"
+                android:gravity="center"
+                android:text=""
+                android:textColor="@color/black" />
+        </LinearLayout>
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

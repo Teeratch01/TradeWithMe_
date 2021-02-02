@@ -1,15 +1,13 @@
 package com.example.TradewithMe;
 
 import android.content.Intent;
-import android.content.pm.PackageInstaller;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.se.omapi.Session;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,26 +15,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
-import com.facebook.FacebookSdk;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
-import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class Profile extends Fragment {
@@ -46,9 +39,13 @@ public class Profile extends Fragment {
     private CallbackManager callbackManager;
 
     //For illustrate
-    private TextView first_lastname,firstname,lasstname,email;
+    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile;
     private DatabaseReference databaseReference,providerefference;
     private String userID;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private CircleImageView profileImageView;
 
 
     @Override
@@ -78,11 +75,15 @@ public class Profile extends Fragment {
 
         });
 
+
+
         //Illustrate user info from firebase
         first_lastname = view.findViewById(R.id.first_lastname);
         firstname = view.findViewById(R.id.firstname_text);
         lasstname = view.findViewById(R.id.lastname_text);
         email = view.findViewById(R.id.email_text);
+        phone_number = view.findViewById(R.id.phone_number_text);
+        profileImageView = view.findViewById(R.id.profile_image_beforechat);
 
 //        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 //        if (user !=null)
@@ -105,20 +106,26 @@ public class Profile extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User userProfile =  snapshot.getValue(User.class);
-
                 if (userProfile!=null)
                 {
                     String firstname_fb = userProfile.firstname;
                     String lastname_fb = userProfile.lastname;
                     String email_fb = userProfile.email;
+                    String phone_number_fb =userProfile.phone_number;
 
                     first_lastname.setText(firstname_fb+" "+lastname_fb);
                     firstname.setText("Firstname: "+firstname_fb);
                     lasstname.setText("Lastname: "+lastname_fb);
                     email.setText("Email: "+email_fb);
+                    phone_number.setText("Phone number: "+phone_number_fb);
+
 
                 }
-
+                if (snapshot.hasChild("image"))
+                {
+                    String image = snapshot.child("image").getValue().toString();
+                    Picasso.get().load(image).into(profileImageView);
+                }
             }
 
 
@@ -129,22 +136,59 @@ public class Profile extends Fragment {
             }
         });
 
-//        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//        if (user!=null)
-//        {
-//            for (UserInfo profile : user.getProviderData()) {
-//                // Id of the provider (ex: google.com)
-//                String providerId = profile.getProviderId();
-//                String uid = profile.getUid();
-//                String name = profile.getDisplayName();
-//                String email = profile.getEmail();
-//
-//                Log.d("userid",uid);
-//                Log.d("name",name);
-//                Log.d("email",email);
-//
-//            };
-//        }
+        edit_profile = view.findViewById(R.id.edit_profile_btn);
+
+        edit_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(),EditProfile.class);
+                startActivity(intent);
+            }
+        });
+
+        swipeRefreshLayout = view.findViewById(R.id.refresh_profile);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+                userID = user.getUid();
+                databaseReference.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        User userProfile =  snapshot.getValue(User.class);
+                        if (userProfile!=null)
+                        {
+                            String firstname_fb = userProfile.firstname;
+                            String lastname_fb = userProfile.lastname;
+                            String email_fb = userProfile.email;
+                            String phone_number_fb =userProfile.phone_number;
+
+                            first_lastname.setText(firstname_fb+" "+lastname_fb);
+                            firstname.setText("Firstname: "+firstname_fb);
+                            lasstname.setText("Lastname: "+lastname_fb);
+                            email.setText("Email: "+email_fb);
+                            phone_number.setText("Phone number: "+phone_number_fb);
+                        }
+                        if (snapshot.hasChild("image"))
+                        {
+                            String image = snapshot.child("image").getValue().toString();
+                            Picasso.get().load(image).into(profileImageView);
+                        }
+
+                    }
+
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(),"Something wrong happen",Toast.LENGTH_LONG).show();
+
+                    }
+                });
+
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
 
 
@@ -174,6 +218,7 @@ public class Profile extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 //        callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
-
     }
+
+
 }

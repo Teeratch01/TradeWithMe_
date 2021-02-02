@@ -101,15 +101,21 @@
 
             <Button
                 android:id="@+id/post"
-                android:layout_width="202dp"
-                android:layout_height="wrap_content"
+                android:layout_width="148dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:backgroundTint="#62959c"
                 android:text="Post" />
 
             <Button
                 android:id="@+id/search_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Search" />
+                android:layout_width="148dp"
+                android:layout_height="match_parent"
+                android:backgroundTint="#c19277"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:text="Search"  />
 
         </LinearLayout>
 

@@ -67,6 +67,7 @@ public class Signup extends AppCompatActivity {
         String lastname_st = lastname.getText().toString().trim();
         String email_st = email.getText().toString().trim();
         String password_st =password.getText().toString().trim();
+        String phone_number_st = "The user have to edit first";
 
         //Layout
 //        firstname_ly = findViewById(R.id.tvFirstname);
@@ -113,12 +114,16 @@ public class Signup extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
 
+
+
                 if (task.isSuccessful())
                 {
                     User user_info = new User(
                             firstname_st,
                             lastname_st,
-                            email_st
+                            email_st,
+                            phone_number_st
+
                     );
 
                     FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(user_info).addOnCompleteListener(new OnCompleteListener<Void>() {
