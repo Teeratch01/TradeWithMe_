@@ -1,6 +1,7 @@
 package com.example.TradewithMe;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,6 +60,7 @@ public class Direct_Message extends AppCompatActivity {
 
     private void contact_list()
     {
+
         options = new FirebaseRecyclerOptions.Builder<User>().setQuery(reference,User.class).build();
         adapter = new FirebaseRecyclerAdapter<User,ContactViewHolder>(options) {
             @NonNull
@@ -86,6 +89,7 @@ public class Direct_Message extends AppCompatActivity {
 
                             String name = snapshot.child("firstname").getValue().toString();
                             String lastname = snapshot.child("lastname").getValue().toString();
+//                            String last_message = getIntent().getExtras().get("last_seen_message").toString();
 
                             String fullname = name+" "+lastname;
 
@@ -102,20 +106,63 @@ public class Direct_Message extends AppCompatActivity {
                             });
                         }
 
+                        DatabaseReference chat_refference = FirebaseDatabase.getInstance().getReference("Messages");
+                        chat_refference.child(uid_current_user).child(userID).addChildEventListener(new ChildEventListener() {
+                            @Override
+                            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                Messages messages=  snapshot.getValue(Messages.class);
+                                holder.setLastMessage(messages.getMessage());
+                            }
+
+                            @Override
+                            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                            }
+
+                            @Override
+                            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+                            }
+
+                            @Override
+                            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+
+
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
 
                     }
+
+
+
                 });
+
+
             }
 
 
         };
 
         adapter.startListening();
-        chat_list.setAdapter(adapter);
+//        adapter.notifyDataSetChanged();
+        adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        if (adapter!=null)
+        {
+            chat_list.setAdapter(adapter);
+        }
+
+        chat_list.smoothScrollToPosition(chat_list.getAdapter().getItemCount());
+
     }
 
     public class ContactViewHolder extends RecyclerView.ViewHolder
@@ -131,10 +178,18 @@ public class Direct_Message extends AppCompatActivity {
             TextView name =mView.findViewById(R.id.name_direct_message);
             CircleImageView image = mView.findViewById(R.id.profile_image_direct_message);
 
+
             name.setText(nameill);
             Picasso.get().load(imageill).into(image);
+//            last_message.setText(last_textill);
 
         }
+        public void setLastMessage(String lastill)
+        {
+            TextView last_message = mView.findViewById(R.id.last_text);
+            last_message.setText(lastill);
+        }
+
 
     }
 

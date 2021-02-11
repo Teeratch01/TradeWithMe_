@@ -35,7 +35,7 @@
             android:id="@+id/private_message_list_user"
             android:layout_width="match_parent"
             android:layout_height="628dp"
-            android:background="#15202B"
+            android:background="@color/white"
             android:layout_below="@id/time_viachat"
             android:layout_above="@+id/linearLayout3"
             >
@@ -51,6 +51,13 @@
             android:layout_alignParentBottom="true"
             android:gravity="center"
             >
+            <ImageButton
+                android:id="@+id/sent_location"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_placeholder" />
+
 
             <EditText
                 android:id="@+id/input_message"

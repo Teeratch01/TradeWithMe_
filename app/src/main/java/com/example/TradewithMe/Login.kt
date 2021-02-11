@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.facebook.*
+import com.facebook.login.LoginFragment
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -20,7 +21,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
+import com.google.firebase.iid.FirebaseInstanceId
 import java.util.*
+import kotlin.collections.HashMap
 
 
 // https://www.youtube.com/watch?v=S-Mr-CcdU08&t=159s for Facebook authen
@@ -94,8 +97,14 @@ class Login : AppCompatActivity() {
                             if (!task.isSuccessful) {
                                 Toast.makeText(this@Login, "Log In Error, Please try Again", Toast.LENGTH_SHORT).show()
                             } else {
+                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                val map = hashMapOf<String,String>()
+                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                map.put("token", deviceToken.toString())
+                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
                                 val intToDashboard = Intent(this@Login, Navigation::class.java)
                                 startActivity(intToDashboard)
+
                             }
                         }
             } else {
@@ -147,6 +156,22 @@ class Login : AppCompatActivity() {
                             if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString()))
                             {
                                 FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_info)
+
+                            }
+                            val userID = mFirebaseAuth!!.currentUser?.uid
+                            val map = hashMapOf<String,String>()
+                            val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                            map.put("token", deviceToken.toString())
+                            if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
+                            {
+                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                            }
+                            else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
+                            {
+                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!)
+                                {
+                                    FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                }
                             }
                         }
                         override fun onCancelled(error: DatabaseError) {
@@ -154,6 +179,7 @@ class Login : AppCompatActivity() {
                         }
 
                     })
+
 
                 }
 //                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_google)
@@ -213,6 +239,22 @@ class Login : AppCompatActivity() {
                             if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString()))
                             {
                                 FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().currentUser?.uid.toString()).setValue(user_info)
+
+                            }
+                            val userID = mFirebaseAuth!!.currentUser?.uid
+                            val map = hashMapOf<String,String>()
+                            val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                            map.put("token", deviceToken.toString())
+                            if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
+                            {
+                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                            }
+                            else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
+                            {
+                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!)
+                                {
+                                    FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                }
                             }
                         }
 
@@ -222,6 +264,7 @@ class Login : AppCompatActivity() {
 
 
                     })
+
 
                     Toast.makeText(applicationContext, "Your Google Account is Connected to our Application", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(applicationContext, Navigation::class.java))

@@ -1,5 +1,6 @@
 package com.example.TradewithMe;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.text.Layout;
 import android.view.LayoutInflater;
@@ -36,7 +37,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     public class MessageViewHolder extends RecyclerView.ViewHolder
     {
-        public TextView senderMessageText,receiverMessageText;
+        public TextView senderMessageText,receiverMessageText,timesender,timereceiver;
         public CircleImageView receiverProfileImage;
 
         public MessageViewHolder(@NonNull View itemView) {
@@ -44,6 +45,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             senderMessageText = itemView.findViewById(R.id.sender_message_text);
             receiverMessageText = itemView.findViewById(R.id.receiver_message_text);
             receiverProfileImage = itemView.findViewById(R.id.message_profile_image);
+            timesender=itemView.findViewById(R.id.time_sender_message_text);
+            timereceiver=itemView.findViewById(R.id.time_receiver_message_text);
+
         }
     }
 
@@ -86,21 +90,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         {
             holder.receiverMessageText.setVisibility(View.INVISIBLE);
             holder.receiverProfileImage.setVisibility(View.INVISIBLE);
+            holder.senderMessageText.setVisibility(View.INVISIBLE);
+            holder.timesender.setVisibility(View.INVISIBLE);
+            holder.timereceiver.setVisibility(View.INVISIBLE);
+
             if (fromUserID.equals(messageSenderID))
             {
+                holder.senderMessageText.setVisibility(View.VISIBLE);
+                holder.timesender.setVisibility(View.VISIBLE);
 //                holder.senderMessageText.setBackgroundResource(R.drawable.sender_message_layout);
                 holder.senderMessageText.setTextColor(Color.WHITE);
                 holder.senderMessageText.setText(messages.getMessage());
+                holder.timesender.setText(messages.getTime());
+
+//                holder.last_text.setText(messages.getMessage());
             }
             else {
-                holder.senderMessageText.setVisibility(View.INVISIBLE);
 
                 holder.receiverMessageText.setVisibility(View.VISIBLE);
                 holder.receiverProfileImage.setVisibility(View.VISIBLE);
-
+                holder.timereceiver.setVisibility(View.VISIBLE);
 //                holder.receiverMessageText.setBackgroundResource(R.drawable.receiver_message_layout);
-                holder.receiverMessageText.setTextColor(Color.WHITE);
+                holder.receiverMessageText.setTextColor(Color.BLACK);
                 holder.receiverMessageText.setText(messages.getMessage());
+                holder.timereceiver.setText(messages.getTime());
+//                holder.last_text.setText(messages.getMessage());
             }
         }
     }

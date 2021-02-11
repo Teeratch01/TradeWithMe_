@@ -68,7 +68,6 @@
                 android:background="#c19277"
                 android:fontFamily="@font/roboto"
                 android:layout_marginBottom="1dp"
-                android:layout_marginLeft="1dp"
                 android:layout_marginRight="1dp" />
 
             <TextView
@@ -273,7 +272,7 @@
                 android:id="@+id/hongkong"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=" HKD\n Hongkon"
+                android:text=" HKD\n Hongkong"
                 android:fontFamily="@font/roboto"
                 android:padding="6dp"
                 android:background="#e8e8e8"
