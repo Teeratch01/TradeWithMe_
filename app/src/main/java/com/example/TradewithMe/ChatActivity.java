@@ -1,11 +1,15 @@
 package com.example.TradewithMe;
 
 import android.Manifest;
+import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +18,9 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -41,7 +47,9 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -51,6 +59,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,13 +80,13 @@ import java.util.Map;
 public class ChatActivity extends AppCompatActivity {
 
     TextView name_chatact,time_chatact;
-    String name_from_otheract;
+    String name_from_otheract,transaction_num;
     Toolbar ChatToolBar;
-    ImageButton SendMessageButton,SendLocationButton;
+    ImageButton SendMessageButton,SendLocationButton,SendImageButton;
     EditText MessageInputText;
     FirebaseAuth firebaseAuth;
     String messageSenderID,messageReceiverID,last_message;
-    DatabaseReference rootRef;
+    DatabaseReference rootRef,matchuser_ref,record_ref;
     List<Messages> messagesList = new ArrayList<>();
     LinearLayoutManager linearLayoutManager;
     MessageAdapter messageAdapter;
@@ -81,11 +94,18 @@ public class ChatActivity extends AppCompatActivity {
     FusedLocationProviderClient fusedLocationProviderClient;
     String latitude,longitude;
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
+    Uri imageuri;
+    StorageReference firebaseStorage;
+    StorageTask uploadTask;
+    String myUri = "";
+    Button confirm_btn;
+    long maxIdsender,maxIdreceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().hide();
 
 
@@ -129,8 +149,13 @@ public class ChatActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         messageSenderID = firebaseAuth.getCurrentUser().getUid();
         messageReceiverID = getIntent().getExtras().get("other_uid_chatact").toString();
+        transaction_num = getIntent().getExtras().get("transaction_number_ch").toString();
+
+        Log.d("check_transac",transaction_num);
         rootRef = FirebaseDatabase.getInstance().getReference();
         SendLocationButton = findViewById(R.id.sent_location);
+        SendImageButton=findViewById(R.id.sent_image);
+        firebaseStorage = FirebaseStorage.getInstance().getReference().child("Message Pic");
 
         messageAdapter = new MessageAdapter(messagesList);
         userMessageList = findViewById(R.id.private_message_list_user);
@@ -139,14 +164,12 @@ public class ChatActivity extends AppCompatActivity {
         userMessageList.setAdapter(messageAdapter);
 
 
-
-
         SendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String messageText = MessageInputText.getText().toString();
                 sendMessage(messageText);
-                FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addValueEventListener(new ValueEventListener() {
+                FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.hasChild("image")){
@@ -164,6 +187,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        //Send location Button
         SendLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -175,13 +199,20 @@ public class ChatActivity extends AppCompatActivity {
 
                 }
 
+            }
+        });
 
-
+        //Send Image
+        SendImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CropImage.activity().start(ChatActivity.this);
             }
         });
 
 
 
+        //Add Message in RecyclerView
         rootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -217,7 +248,197 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        //Match with ther user
+        confirm_btn = findViewById(R.id.confirm_button_match);
+        record_ref =  FirebaseDatabase.getInstance().getReference("Record");
+        matchuser_ref = FirebaseDatabase.getInstance().getReference("Matched_user");
+        confirm_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                String match = "yes";
+                Matched_user setValue = new Matched_user(
+                  match
+                );
+
+                String status = "Ok";
+
+                Record setValuesender = new Record(status,messageReceiverID);
+                Record setValuereceiver = new Record(status,messageSenderID);
+
+                record_ref.child(messageSenderID).child("Matched").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists())
+                        {
+                            maxIdsender = snapshot.getChildrenCount();
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+                record_ref.child(messageReceiverID).child("Matched").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists())
+                        {
+                            maxIdreceiver = snapshot.getChildrenCount();
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+
+
+//                matchuser_ref.child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        if (!snapshot.hasChild(messageReceiverID))
+//                        {
+//                            matchuser_ref.child(messageSenderID).child(messageReceiverID).setValue(setValue);
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
+                record_ref.child(messageSenderID).child("Matched").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
+                record_ref.child(messageReceiverID).child("Matched").child(String.valueOf(maxIdsender+1)).setValue(setValuereceiver);
+
+                matchuser_ref.child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (!snapshot.hasChild(messageReceiverID))
+                        {
+                            matchuser_ref.child(messageSenderID).child(messageReceiverID).setValue(setValue).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this);
+
+                                    alert.setCancelable(true);
+                                    alert.setTitle("Congratulations");
+                                    alert.setMessage(Html.fromHtml("You are already match<br><font color='#FF0000'>*Suggestion: You should meet each other in the public ex. supermarket, coffee shop</font>"));
+
+                                    alert.setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.cancel();
+                                            Intent start_chatmatch = new Intent(getApplicationContext(),Chat_matchActivity.class);
+                                            start_chatmatch.putExtra("name_chatact",name_from_otheract);
+                                            start_chatmatch.putExtra("other_uid_chatact",messageReceiverID);
+                                            start_chatmatch.putExtra("transaction_number_ch",transaction_num);
+                                            startActivity(start_chatmatch);
+                                        }
+                                    });
+                                    alert.show();
+                                }
+                            });
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+            }
+        });
+
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE )
+        {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                imageuri = result.getUri();
+
+                String messageSenderRef = "Messages/"+ messageSenderID + "/" + messageReceiverID;
+                String messageReceiverRef = "Messages/"+ messageReceiverID + "/" + messageSenderID;
+
+                DatabaseReference userMessagekeyRef = rootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
+                String messagePushID = userMessagekeyRef.getKey();
+                final StorageReference fileRef = firebaseStorage.child(messagePushID+"."+"jpg");
+
+                uploadTask = fileRef.putFile(imageuri);
+                uploadTask.continueWithTask(new Continuation() {
+                    @Override
+                    public Object then(@NonNull Task task) throws Exception {
+                        if (!task.isSuccessful())
+                        {
+                            throw task.getException();
+                        }
+                        return fileRef.getDownloadUrl();
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+
+                        if (task.isSuccessful())
+                        {
+                            Uri downloadUri = task.getResult();
+                            myUri = downloadUri.toString();
+
+                            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                            String time = sdf.format(new Date());
+
+                            Map mesageTextBody = new HashMap();
+                            mesageTextBody.put("message",myUri);
+                            mesageTextBody.put("name",imageuri.getLastPathSegment());
+                            mesageTextBody.put("type","image");
+                            mesageTextBody.put("from",messageSenderID);
+                            mesageTextBody.put("time",time);
+
+                            Map messageBodyDetails = new HashMap();
+                            messageBodyDetails.put(messageSenderRef + "/" + messagePushID,mesageTextBody);
+                            messageBodyDetails.put(messageReceiverRef + "/" + messagePushID,mesageTextBody);
+
+                            rootRef.updateChildren(messageBodyDetails).addOnCompleteListener(new OnCompleteListener() {
+                                @Override
+                                public void onComplete(@NonNull Task task) {
+                                    if (task.isSuccessful())
+                                    {
+                                        Toast.makeText(ChatActivity.this,"Message Sent Succesfully ",Toast.LENGTH_SHORT).show();
+                                    }
+                                    else
+                                    {
+                                        Toast.makeText(ChatActivity.this,"Error",Toast.LENGTH_SHORT).show();
+                                    }
+
+                                    MessageInputText.setText("");
+
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+            }
+
+        }
+        else
+        {
+            Toast.makeText(this,"Error, Try again",Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -337,41 +558,55 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        String match = "yes";
+        Matched_user setValue = new Matched_user(
+                match
+        );
+        matchuser_ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.hasChild(messageReceiverID))
+                {
+                    if (snapshot.child(messageReceiverID).hasChild(messageSenderID))
+                    {
+                        if (!snapshot.child(messageSenderID).child(messageReceiverID).exists())
+                        {
+                            //                        matchuser_ref.child(messageSenderID).child(messageReceiverID).setValue(setValue);
+                            AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this);
 
-//        rootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//                Messages messages=  snapshot.getValue(Messages.class);
-//
-//                messagesList.add(messages);
-//                messageAdapter.notifyDataSetChanged();
-//
-//                userMessageList.smoothScrollToPosition(userMessageList.getAdapter().getItemCount());
-//
-//                last_message = messages.getMessage();
-//
-//            }
-//
-//            @Override
-//            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//
-//            }
-//
-//            @Override
-//            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
+                            alert.setCancelable(true);
+                            alert.setTitle("Congratulations");
+                            alert.setMessage(Html.fromHtml("You are already match<br><font color='#FF0000'>*Suggestion: You should meet each other in the public ex. supermarket, coffee shop</font>"));
+                            alert.setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    matchuser_ref.child(messageSenderID).child(messageReceiverID).setValue(setValue).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Intent start_chatmatch = new Intent(getApplicationContext(),Chat_matchActivity.class);
+                                            start_chatmatch.putExtra("name_chatact",name_from_otheract);
+                                            start_chatmatch.putExtra("other_uid_chatact",messageReceiverID);
+                                            start_chatmatch.putExtra("transaction_number_ch",transaction_num);
+                                            startActivity(start_chatmatch);
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                                }
+                            });
+                            alert.show();
+                        }
+
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 
@@ -449,11 +684,17 @@ public class ChatActivity extends AppCompatActivity {
         };
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        request.setRetryPolicy(new DefaultRetryPolicy(30000,
+        request.setRetryPolicy(new DefaultRetryPolicy(300,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         requestQueue.add(request);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item){
+        Intent myIntent = new Intent(getApplicationContext(), Direct_Message.class);
+        startActivityForResult(myIntent, 0);
+        return true;
     }
 
 }

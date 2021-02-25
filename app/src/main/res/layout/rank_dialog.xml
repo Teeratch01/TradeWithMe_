@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="50dp"
+    android:background="@drawable/dialog_bf">
+
+    <TextView android:text="Doctor's Name" android:id="@+id/rating_name"
+        android:textSize="24dp" android:layout_marginTop="10dp"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:layout_gravity="center"/>
+
+    <RatingBar
+        android:layout_marginTop="10dp" android:layout_marginBottom="10dp"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:clickable="true"
+        android:id="@+id/dialog_ratingbar" android:layout_gravity="center"
+        android:numStars="5" android:stepSize="0.5"
+        android:theme="@style/RatingBar"
+        android:isIndicator="false"/>
+
+    <Button android:id="@+id/rank_dialog_button"
+        android:layout_height="wrap_content"
+        android:text="submit"  android:focusable="false"
+        android:background="#c19277"
+        android:layout_margin="5dip" android:textColor="@color/white"
+        android:textSize="15dip" android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        />
+
+</LinearLayout>

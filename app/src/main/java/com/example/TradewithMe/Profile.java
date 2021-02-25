@@ -8,10 +8,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +22,8 @@ import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -27,7 +31,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -39,13 +48,17 @@ public class Profile extends Fragment {
     private CallbackManager callbackManager;
 
     //For illustrate
-    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile;
+    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile,rating_number;
     private DatabaseReference databaseReference,providerefference;
     private String userID;
+
+    private FirebaseAuth firebaseAuth;
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private CircleImageView profileImageView;
+
+    private RatingBar ratingBar;
 
 
     @Override
@@ -55,13 +68,51 @@ public class Profile extends Fragment {
         view =inflater.inflate(R.layout.fragment_profile, container, false);
 //        FacebookSdk.getApplicationContext();
 //        AppEventsLogger.activateApp(getActivity());
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        String current_userID =  firebaseAuth.getCurrentUser().getUid();
+
+        Log.d("Check_Uid",current_userID);
         Button btnlogout = view.findViewById(R.id.logout);
+
+
 
         btnlogout.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v){
 
+
+
+//                FirebaseDatabase.getInstance().getReference("Users").child(current_userID).addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        if (snapshot.hasChild("token"))
+//                        {
+//                            FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("token").setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                @Override
+//                                public void onComplete(@NonNull Task<Void> task) {
+//
+//                                }
+//                            });
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
+
+                HashMap map = new HashMap();
+                map.put("token","");
+                FirebaseDatabase.getInstance().getReference("Users").child(current_userID).updateChildren(map);
+
                 FirebaseAuth.getInstance().signOut();
+
+
+
+
+                Log.d("check,ch","check");
 
                 LoginManager.getInstance().logOut();
                 GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build();
@@ -70,6 +121,8 @@ public class Profile extends Fragment {
 
                 Intent intoLogin =new Intent(getActivity(),Login.class);
                 startActivity(intoLogin);
+
+
 
             }
 
@@ -178,7 +231,6 @@ public class Profile extends Fragment {
 
                     }
 
-
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Toast.makeText(getContext(),"Something wrong happen",Toast.LENGTH_LONG).show();
@@ -190,29 +242,35 @@ public class Profile extends Fragment {
             }
         });
 
+        ratingBar = view.findViewById(R.id.profile_rating);
+        rating_number = view.findViewById(R.id.rating_number_text);
+        databaseReference.child(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.hasChild("ratings"))
+                {
+                    Float current_user_rating = Float.valueOf(snapshot.child("ratings").getValue().toString());
+//                    ratingBar.setMax(5);
+                    ratingBar.setRating(current_user_rating);
+                    rating_number.setText(String.valueOf(current_user_rating));
+                }
+                else
+                {
+                    rating_number.setText("No Rating Yet");
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
 
         return view;
 
     }
 
-//    public void disconnectFromFacebook() {
-//
-//        if (AccessToken.getCurrentAccessToken() == null) {
-//            return; // already logged out
-//        }
-//
-//        new GraphRequest(AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE, new GraphRequest
-//                .Callback() {
-//            @Override
-//            public void onCompleted(GraphResponse graphResponse) {
-//
-//                LoginManager.getInstance().logOut();
-//
-//            }
-//        }).executeAsync();
-//    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

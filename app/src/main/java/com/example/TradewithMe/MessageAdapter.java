@@ -6,6 +6,7 @@ import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -37,8 +38,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     public class MessageViewHolder extends RecyclerView.ViewHolder
     {
-        public TextView senderMessageText,receiverMessageText,timesender,timereceiver;
+        public TextView senderMessageText,receiverMessageText,timesender,timereceiver,timeimagesender,timeimagereceiver;
         public CircleImageView receiverProfileImage;
+        public ImageView messageSenderPicture,messageReceiverImage;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -47,6 +49,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             receiverProfileImage = itemView.findViewById(R.id.message_profile_image);
             timesender=itemView.findViewById(R.id.time_sender_message_text);
             timereceiver=itemView.findViewById(R.id.time_receiver_message_text);
+            messageSenderPicture = itemView.findViewById(R.id.message_sender_image_view);
+            messageReceiverImage = itemView.findViewById(R.id.message_receiver_image_view);
+            timeimagesender = itemView.findViewById(R.id.time_sender_image_text);
+            timeimagereceiver = itemView.findViewById(R.id.time_receiver_image_text);
 
         }
     }
@@ -86,13 +92,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
         });
 
+        holder.receiverMessageText.setVisibility(View.GONE);
+        holder.receiverProfileImage.setVisibility(View.GONE);
+        holder.senderMessageText.setVisibility(View.GONE);
+        holder.messageSenderPicture.setVisibility(View.GONE);
+        holder.messageReceiverImage.setVisibility(View.GONE);
+        holder.timesender.setVisibility(View.GONE);
+        holder.timereceiver.setVisibility(View.GONE);
+        holder.timeimagesender.setVisibility(View.GONE);
+        holder.timeimagereceiver.setVisibility(View.GONE);
+
         if (fromMessageType.equals("text"))
         {
-            holder.receiverMessageText.setVisibility(View.INVISIBLE);
-            holder.receiverProfileImage.setVisibility(View.INVISIBLE);
-            holder.senderMessageText.setVisibility(View.INVISIBLE);
-            holder.timesender.setVisibility(View.INVISIBLE);
-            holder.timereceiver.setVisibility(View.INVISIBLE);
+//            holder.receiverMessageText.setVisibility(View.INVISIBLE);
+//            holder.receiverProfileImage.setVisibility(View.INVISIBLE);
+//            holder.senderMessageText.setVisibility(View.INVISIBLE);
+//            holder.timesender.setVisibility(View.INVISIBLE);
+//            holder.timereceiver.setVisibility(View.INVISIBLE);
 
             if (fromUserID.equals(messageSenderID))
             {
@@ -116,6 +132,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.timereceiver.setText(messages.getTime());
 //                holder.last_text.setText(messages.getMessage());
             }
+        }
+        else if (fromMessageType.equals("image"))
+        {
+            if (fromUserID.equals(messageSenderID))
+            {
+                holder.messageSenderPicture.setVisibility(View.VISIBLE);
+                Picasso.get().load(messages.getMessage()).into(holder.messageSenderPicture);
+
+                holder.timeimagesender.setVisibility(View.VISIBLE);
+                holder.timeimagesender.setText(messages.getTime());
+            }
+            else {
+                holder.receiverProfileImage.setVisibility(View.VISIBLE);
+                holder.messageReceiverImage.setVisibility(View.VISIBLE);
+
+                Picasso.get().load(messages.getMessage()).into(holder.messageReceiverImage);
+
+                holder.timeimagereceiver.setVisibility(View.VISIBLE);
+                holder.timeimagereceiver.setText(messages.getTime());
+            }
+
         }
     }
 

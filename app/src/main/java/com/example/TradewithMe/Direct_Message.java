@@ -58,6 +58,8 @@ public class Direct_Message extends AppCompatActivity {
 
     }
 
+
+
     private void contact_list()
     {
 
@@ -98,10 +100,72 @@ public class Direct_Message extends AppCompatActivity {
                             holder.itemView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Intent chatIntent = new Intent(getApplicationContext(),ChatActivity.class);
-                                    chatIntent.putExtra("name_chatact",fullname);
-                                    chatIntent.putExtra("other_uid_chatact",userID);
-                                    startActivity(chatIntent);
+                                    reference.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            if (snapshot.hasChild("Transaction_num"))
+                                            {
+                                                String transaction_number = snapshot.child("Transaction_num").getValue().toString();
+                                                FirebaseDatabase.getInstance().getReference("Matched_user").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                        if (snapshot.exists())
+                                                        {
+                                                            if (snapshot.hasChild(uid_current_user))
+                                                            {
+                                                                if (snapshot.child(uid_current_user).hasChild(userID))
+                                                                {
+                                                                    Intent chatIntent = new Intent(getApplicationContext(),Chat_matchActivity.class);
+                                                                    chatIntent.putExtra("name_chatact",fullname);
+                                                                    chatIntent.putExtra("other_uid_chatact",userID);
+                                                                    chatIntent.putExtra("transaction_number_ch",transaction_number);
+                                                                    startActivity(chatIntent);
+                                                                    Log.d("hello","hello");
+                                                                }
+                                                                else
+                                                                {
+                                                                    Intent chatIntent = new Intent(getApplicationContext(),ChatActivity.class);
+                                                                    chatIntent.putExtra("name_chatact",fullname);
+                                                                    chatIntent.putExtra("other_uid_chatact",userID);
+                                                                    chatIntent.putExtra("transaction_number_ch",transaction_number);
+                                                                    startActivity(chatIntent);
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                Intent chatIntent = new Intent(getApplicationContext(),ChatActivity.class);
+                                                                chatIntent.putExtra("name_chatact",fullname);
+                                                                chatIntent.putExtra("other_uid_chatact",userID);
+                                                                chatIntent.putExtra("transaction_number_ch",transaction_number);
+                                                                startActivity(chatIntent);
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Intent chatIntent = new Intent(getApplicationContext(),ChatActivity.class);
+                                                            chatIntent.putExtra("name_chatact",fullname);
+                                                            chatIntent.putExtra("other_uid_chatact",userID);
+                                                            chatIntent.putExtra("transaction_number_ch",transaction_number);
+                                                            startActivity(chatIntent);
+                                                        }
+
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
+
+
                                 }
                             });
                         }
@@ -111,7 +175,16 @@ public class Direct_Message extends AppCompatActivity {
                             @Override
                             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                                 Messages messages=  snapshot.getValue(Messages.class);
-                                holder.setLastMessage(messages.getMessage());
+                                if (messages.getType().equals("image"))
+                                {
+                                    holder.setLastMessage("Photo");
+                                }
+                                else{
+
+                                    holder.setLastMessage(messages.getMessage());
+                                }
+                                holder.settime(messages.getTime());
+
                             }
 
                             @Override
@@ -189,6 +262,12 @@ public class Direct_Message extends AppCompatActivity {
             TextView last_message = mView.findViewById(R.id.last_text);
             last_message.setText(lastill);
         }
+        public void settime(String lasttimeill)
+        {
+            TextView last_message_time = mView.findViewById(R.id.last_text_time);
+            last_message_time.setText(lasttimeill);
+        }
+
 
 
     }

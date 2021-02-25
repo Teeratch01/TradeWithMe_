@@ -68,5 +68,43 @@
         android:paddingEnd="25dp"
         android:layout_below="@id/sender_message_text"/>
 
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:id="@+id/message_sender_image_view"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="10dp"
+        android:scaleType="centerCrop"/>
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:id="@+id/message_receiver_image_view"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="50dp"
+
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:id="@+id/time_receiver_image_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/message_profile_image"
+        android:text="Time"
+        android:textSize="10dp"
+        android:layout_below="@+id/message_receiver_image_view"
+        />
+
+    <TextView
+        android:id="@+id/time_sender_image_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Time"
+        android:layout_alignParentEnd="true"
+        android:paddingEnd="25dp"
+        android:textSize="10dp"
+        android:layout_below="@+id/message_sender_image_view"
+        />
+
 
 </RelativeLayout>

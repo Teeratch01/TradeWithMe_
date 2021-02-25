@@ -12,6 +12,7 @@
         <item>JPY</item>
         <item>KRW</item>
         <item>HKD</item>
+        <item>THB</item>
     </string-array>
 
     <string-array name="want_currency">
@@ -21,6 +22,7 @@
         <item>JPY</item>
         <item>KRW</item>
         <item>HKD</item>
+        <item>THB</item>
     </string-array>
 
 

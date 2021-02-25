@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".Chat_matchActivity"></activity>
+        <activity android:name=".ChatActivity" />
         <activity android:name=".Profile_rating" />
         <activity android:name=".EditProfile" />
         <activity android:name=".ForgotPassword" />
@@ -56,16 +57,13 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".FirebaseNotificationServce">
+        <service android:name=".FirebaseNotificationServce">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        
-        <service android:name=".FetchAddressIntentService"/>
-
+        <service android:name=".FetchAddressIntentService" />
     </application>
 
 </manifest>

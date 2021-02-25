@@ -73,6 +73,8 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
 
     }
 
+
+
     private void createNormalNotificaiton(String title,String message,String senderID,String senderImage,String receiverID)
     {
         Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);

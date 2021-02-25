@@ -57,6 +57,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -108,49 +109,6 @@ public class Exchange_act extends Fragment {
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
-        //Find Current Location
-//        current_location = view.findViewById(R.id.current_location);
-//        resultReceiver= new AddressResultReceiver(new Handler());
-//        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
-//        } else {
-//            getCurrentLocation();
-//            Log.d("check_in","check");
-//        }
-//        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
-//
-//        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(),Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED)
-//        {
-//
-//            LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-//            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-//                @Override
-//                public void onComplete(@NonNull Task<Location> task) {
-//                    Location location = task.getResult();
-//                    if(location != null)
-//                    {
-//                        Geocoder geocoder= new Geocoder(getContext(), Locale.getDefault());
-//                        try {
-//                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-////                            Log.d("Location", addresses.get(0).getAddressLine(0));
-//                            latitude = String.valueOf(addresses.get(0).getLatitude());
-//                            longitude = String.valueOf(addresses.get(0).getLongitude());
-//                            current_location.setText(Html.fromHtml("<b>  Location : </b>" + addresses.get(0).getAddressLine(0)));
-//
-//                        }
-//                        catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            });
-//
-//        }else
-//        {
-//            ActivityCompat.requestPermissions(getActivity(),new String[]{
-//                    Manifest.permission.ACCESS_FINE_LOCATION
-//            },44);
-//        }
 
 
         //Post Currency
@@ -178,7 +136,28 @@ public class Exchange_act extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    maxid = (int) snapshot.getChildrenCount();
+                    ArrayList<Integer> list_currency = new ArrayList<>();
+                    for (DataSnapshot data :snapshot.getChildren())
+                    {
+                        Integer check_increment = Integer.parseInt(data.getKey());
+                        list_currency.add(check_increment);
+                    }
+
+                    Log.d("check_number", String.valueOf(list_currency));
+                    Integer total = 1 ;
+                    for (Integer i =2; i <= (list_currency.size()+1);i++)
+                    {
+                        total += i;
+                        total -= list_currency.get(i-2);
+                    }
+
+                    Log.d("cehck_missingnum", String.valueOf(total));
+
+                    maxid = total;
+                }
+                else
+                {
+                    maxid = 1;
                 }
             }
 
@@ -232,9 +211,13 @@ public class Exchange_act extends Fragment {
                                 if (snapshot.exists()) {
                                     String key = null;
                                     for (DataSnapshot data : snapshot.getChildren()) {
-                                        if (data.child("uid").getValue().equals(userid) && data.child("combine_currency").getValue().equals(combine_currency)) {
-                                            key = data.getKey();
+                                        if (data != null)
+                                        {
+                                            if (data.child("uid").getValue().equals(userid) && data.child("combine_currency").getValue().equals(combine_currency)) {
+                                                key = data.getKey();
+                                            }
                                         }
+
                                     }
                                     if (key != null) {
                                         HashMap<String, Object> currencyMap = new HashMap<>();
@@ -263,7 +246,7 @@ public class Exchange_act extends Fragment {
                                             }
                                         });
                                     } else if (key == null) {
-                                        FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid + 1)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
@@ -284,7 +267,7 @@ public class Exchange_act extends Fragment {
                                         });
                                     }
                                 } else {
-                                    FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid + 1)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
@@ -368,6 +351,7 @@ public class Exchange_act extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        //Find the current location
         resultReceiver= new AddressResultReceiver(new Handler());
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
@@ -458,7 +442,7 @@ public class Exchange_act extends Fragment {
             if (resultCode == Constants.SUCCESS_RESULT)
             {
                 Log.d("check_lo",resultData.getString(Constants.RESULT_DATA_KEY));
-                current_location.setText("Location :  "+resultData.getString(Constants.RESULT_DATA_KEY));
+                current_location.setText(" Location :  "+resultData.getString(Constants.RESULT_DATA_KEY));
             }
             else {
                 Toast.makeText(getContext(),resultData.getString(Constants.RESULT_DATA_KEY), Toast.LENGTH_SHORT).show();
@@ -587,11 +571,9 @@ public class Exchange_act extends Fragment {
                                             {
                                                 image = snapshot.child("image").getValue().toString();
                                             }
-
-
-
-
+                                            Log.d("check_transaction",user_id_clickable);
                                             Intent chatIntent = new Intent(getContext(),Profile_rating.class);
+                                            chatIntent.putExtra("Transaction_number",user_id_clickable);
                                             chatIntent.putExtra("name_bf_chat",name);
                                             chatIntent.putExtra("email_for_chat",email);
                                             chatIntent.putExtra("phnumber_for_chat",phone_number);
