@@ -157,7 +157,7 @@ public class ChatActivity extends AppCompatActivity {
         SendImageButton=findViewById(R.id.sent_image);
         firebaseStorage = FirebaseStorage.getInstance().getReference().child("Message Pic");
 
-        messageAdapter = new MessageAdapter(messagesList);
+        messageAdapter = new MessageAdapter(messagesList,getApplicationContext());
         userMessageList = findViewById(R.id.private_message_list_user);
         linearLayoutManager = new LinearLayoutManager(this);
         userMessageList.setLayoutManager(linearLayoutManager);
@@ -207,6 +207,21 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 CropImage.activity().start(ChatActivity.this);
+//                FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        if (snapshot.hasChild("image")){
+//                            String image = snapshot.child("image").getValue().toString();
+//                            String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+//                            getToken("Sent Photo",messageSenderID,image,messageReceiverID,name);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
             }
         });
 
@@ -248,10 +263,45 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+        String date_for = date.format(new Date());
+        Log.d("check_date",date_for);
+
         //Match with ther user
         confirm_btn = findViewById(R.id.confirm_button_match);
         record_ref =  FirebaseDatabase.getInstance().getReference("Record");
         matchuser_ref = FirebaseDatabase.getInstance().getReference("Matched_user");
+        record_ref.child(messageSenderID).child("Matched").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists())
+                {
+                    maxIdsender = snapshot.getChildrenCount();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        record_ref.child(messageReceiverID).child("Matched").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists())
+                {
+                    maxIdreceiver = snapshot.getChildrenCount();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
         confirm_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -261,42 +311,45 @@ public class ChatActivity extends AppCompatActivity {
                   match
                 );
 
-                String status = "Ok";
+//                String status = "Ok";
+//
+//                SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+//                String date_for = date.format(new Date());
+//
+//                Record setValuesender = new Record(status,messageReceiverID,date_for);
+//                Record setValuereceiver = new Record(status,messageSenderID,date_for);
 
-                Record setValuesender = new Record(status,messageReceiverID);
-                Record setValuereceiver = new Record(status,messageSenderID);
-
-                record_ref.child(messageSenderID).child("Matched").addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists())
-                        {
-                            maxIdsender = snapshot.getChildrenCount();
-                        }
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-
-                record_ref.child(messageReceiverID).child("Matched").addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists())
-                        {
-                            maxIdreceiver = snapshot.getChildrenCount();
-                        }
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
+//                record_ref.child(messageSenderID).child("Matched").addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        if (snapshot.exists())
+//                        {
+//                            maxIdsender = snapshot.getChildrenCount();
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
+//
+//                record_ref.child(messageReceiverID).child("Matched").addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        if (snapshot.exists())
+//                        {
+//                            maxIdreceiver = snapshot.getChildrenCount();
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
 
 
 
@@ -315,8 +368,8 @@ public class ChatActivity extends AppCompatActivity {
 //
 //                    }
 //                });
-                record_ref.child(messageSenderID).child("Matched").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
-                record_ref.child(messageReceiverID).child("Matched").child(String.valueOf(maxIdsender+1)).setValue(setValuereceiver);
+//                record_ref.child(messageSenderID).child("Matched").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
+//                record_ref.child(messageReceiverID).child("Matched").child(String.valueOf(maxIdreceiver+1)).setValue(setValuereceiver);
 
                 matchuser_ref.child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -336,6 +389,21 @@ public class ChatActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.cancel();
+                                            FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    if (snapshot.hasChild("image")){
+                                                        String image = snapshot.child("image").getValue().toString();
+                                                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                        getToken("The exchanger want to match with you , Do you want to accept?",messageSenderID,image,messageReceiverID,name);
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
                                             Intent start_chatmatch = new Intent(getApplicationContext(),Chat_matchActivity.class);
                                             start_chatmatch.putExtra("name_chatact",name_from_otheract);
                                             start_chatmatch.putExtra("other_uid_chatact",messageReceiverID);
@@ -361,6 +429,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -400,12 +469,16 @@ public class ChatActivity extends AppCompatActivity {
                             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
                             String time = sdf.format(new Date());
 
+                            SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+                            String date_for = date.format(new Date());
+
                             Map mesageTextBody = new HashMap();
                             mesageTextBody.put("message",myUri);
                             mesageTextBody.put("name",imageuri.getLastPathSegment());
                             mesageTextBody.put("type","image");
                             mesageTextBody.put("from",messageSenderID);
                             mesageTextBody.put("time",time);
+                            mesageTextBody.put("date",date_for);
 
                             Map messageBodyDetails = new HashMap();
                             messageBodyDetails.put(messageSenderRef + "/" + messagePushID,mesageTextBody);
@@ -417,6 +490,21 @@ public class ChatActivity extends AppCompatActivity {
                                     if (task.isSuccessful())
                                     {
                                         Toast.makeText(ChatActivity.this,"Message Sent Succesfully ",Toast.LENGTH_SHORT).show();
+                                        FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                if (snapshot.hasChild("image")){
+                                                    String image = snapshot.child("image").getValue().toString();
+                                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                    getToken("Sent Photo",messageSenderID,image,messageReceiverID,name);
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+
+                                            }
+                                        });
                                     }
                                     else
                                     {
@@ -526,11 +614,16 @@ public class ChatActivity extends AppCompatActivity {
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
             String time = sdf.format(new Date());
 
+            SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+            String date_for = date.format(new Date());
+
             Map mesageTextBody = new HashMap();
             mesageTextBody.put("message",messageText);
             mesageTextBody.put("type","text");
             mesageTextBody.put("from",messageSenderID);
             mesageTextBody.put("time",time);
+            mesageTextBody.put("date",date_for);
+
 
             Map messageBodyDetails = new HashMap();
             messageBodyDetails.put(messageSenderRef + "/" + messagePushID,mesageTextBody);
@@ -562,6 +655,15 @@ public class ChatActivity extends AppCompatActivity {
         Matched_user setValue = new Matched_user(
                 match
         );
+
+        String status = "Ok";
+
+        SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+        String date_for = date.format(new Date());
+
+        Record setValuesender = new Record(status,messageReceiverID,date_for);
+        Record setValuereceiver = new Record(status,messageSenderID,date_for);
+
         matchuser_ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -571,18 +673,28 @@ public class ChatActivity extends AppCompatActivity {
                     {
                         if (!snapshot.child(messageSenderID).child(messageReceiverID).exists())
                         {
-                            //                        matchuser_ref.child(messageSenderID).child(messageReceiverID).setValue(setValue);
-                            AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this);
 
+                            AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this,R.style.AlertDialogCustom);
                             alert.setCancelable(true);
-                            alert.setTitle("Congratulations");
-                            alert.setMessage(Html.fromHtml("You are already match<br><font color='#FF0000'>*Suggestion: You should meet each other in the public ex. supermarket, coffee shop</font>"));
-                            alert.setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                            alert.setTitle("Notifications");
+                            alert.setMessage(Html.fromHtml("Do you want to match with this user?<br><font color='#FF0000'>*Suggestion: If you match with this user , You should meet each other in the public ex. supermarket, coffee shop</font>"));
+                            alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    dialog.cancel();
+                                }
+                            });
+
+                            alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     matchuser_ref.child(messageSenderID).child(messageReceiverID).setValue(setValue).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
+                                            record_ref.child(messageSenderID).child("Matched").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
+                                            record_ref.child(messageReceiverID).child("Matched").child(String.valueOf(maxIdreceiver+1)).setValue(setValuereceiver);
+
                                             Intent start_chatmatch = new Intent(getApplicationContext(),Chat_matchActivity.class);
                                             start_chatmatch.putExtra("name_chatact",name_from_otheract);
                                             start_chatmatch.putExtra("other_uid_chatact",messageReceiverID);
@@ -591,10 +703,11 @@ public class ChatActivity extends AppCompatActivity {
                                             dialog.cancel();
                                         }
                                     });
-
                                 }
                             });
+
                             alert.show();
+
                         }
 
                     }

@@ -184,6 +184,7 @@ public class Direct_Message extends AppCompatActivity {
                                     holder.setLastMessage(messages.getMessage());
                                 }
                                 holder.settime(messages.getTime());
+                                holder.setdate(messages.getDate());
 
                             }
 
@@ -266,6 +267,12 @@ public class Direct_Message extends AppCompatActivity {
         {
             TextView last_message_time = mView.findViewById(R.id.last_text_time);
             last_message_time.setText(lasttimeill);
+        }
+
+        public void setdate(String lastdateill)
+        {
+            TextView last_message_time = mView.findViewById(R.id.date_direct_message);
+            last_message_time.setText(lastdateill);
         }
 
 

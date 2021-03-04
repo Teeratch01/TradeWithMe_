@@ -2,12 +2,11 @@ package com.example.TradewithMe;
 
 public class Messages {
 
-    String from,message,type,time;
+    String from,message,type,time,date;
 
     public Messages(){
 
     }
-
 
     public String getFrom() {
         return from;
@@ -41,11 +40,20 @@ public class Messages {
         this.time = time;
     }
 
-    public Messages(String from, String message, String type, String time) {
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public Messages(String from, String message, String type, String time,String date) {
         this.from = from;
         this.message = message;
         this.type = type;
         this.time=time;
+        this.date = date;
     }
 }
 

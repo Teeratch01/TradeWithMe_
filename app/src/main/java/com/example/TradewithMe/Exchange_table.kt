@@ -131,12 +131,14 @@ class Exchange_table : Fragment() {
                 val usaapiResult = URL(usaAPI).readText()
                 val jsonObject = JSONObject(usaapiResult)
                 usaconversionRate = jsonObject.getJSONObject("rates").getString("THB")
+                val usa_num = jsonObject.getJSONObject("rates").getString("THB").toFloat()
+                val usa_convert = String.format("%.02f", usa_num)
 
                 Log.d("Main", "$usaconversionRate")
                 Log.d("Main", usaapiResult)
 
                 withContext(Dispatchers.Main) {
-                    usarate?.setText(usaconversionRate)
+                    usarate?.setText(usa_convert)
                 }
 
             } catch (e: Exception) {
@@ -151,12 +153,14 @@ class Exchange_table : Fragment() {
                 val ukapiResult = URL(ukAPI).readText()
                 val jsonObject = JSONObject(ukapiResult)
                 ukconversionRate = jsonObject.getJSONObject("rates").getString("THB")
+                val uk_num = jsonObject.getJSONObject("rates").getString("THB").toFloat()
+                val uk_convert = String.format("%.02f", uk_num)
 
                 Log.d("Main", "$ukconversionRate")
                 Log.d("Main", ukapiResult)
 
                 withContext(Dispatchers.Main) {
-                    ukrate?.setText(ukconversionRate)
+                    ukrate?.setText(uk_convert)
                 }
 
             } catch (e: Exception) {
@@ -171,12 +175,14 @@ class Exchange_table : Fragment() {
                 val euapiResult = URL(euAPI).readText()
                 val jsonObject = JSONObject(euapiResult)
                 euconversionRate = jsonObject.getJSONObject("rates").getString("THB")
+                val eu_num = jsonObject.getJSONObject("rates").getString("THB").toFloat()
+                val eu_convert = String.format("%.02f", eu_num)
 
                 Log.d("Main", "$euconversionRate")
                 Log.d("Main", euapiResult)
 
                 withContext(Dispatchers.Main) {
-                    eurate?.setText(euconversionRate)
+                    eurate?.setText(eu_convert)
                 }
 
             } catch (e: Exception) {
@@ -191,12 +197,14 @@ class Exchange_table : Fragment() {
                 val japanapiResult = URL(japanAPI).readText()
                 val jsonObject = JSONObject(japanapiResult)
                 japanconversionRate = jsonObject.getJSONObject("rates").getString("THB")
+                val japan_num = jsonObject.getJSONObject("rates").getString("THB").toFloat()
+                val japan_convert = String.format("%.02f", japan_num)
 
                 Log.d("Main", "$japanconversionRate")
                 Log.d("Main", japanapiResult)
 
                 withContext(Dispatchers.Main) {
-                    japanrate?.setText(japanconversionRate)
+                    japanrate?.setText(japan_convert)
                 }
 
             } catch (e: Exception) {
@@ -211,12 +219,14 @@ class Exchange_table : Fragment() {
                 val koreaapiResult = URL(koreaAPI).readText()
                 val jsonObject = JSONObject(koreaapiResult)
                 koreaconversionRate = jsonObject.getJSONObject("rates").getString("THB")
+                val korea_num = jsonObject.getJSONObject("rates").getString("THB").toFloat()
+                val korea_convert = String.format("%.02f", korea_num)
 
                 Log.d("Main", "$koreaconversionRate")
                 Log.d("Main", koreaapiResult)
 
                 withContext(Dispatchers.Main) {
-                    korearate?.setText(koreaconversionRate)
+                    korearate?.setText(korea_convert)
                 }
 
             } catch (e: Exception) {
@@ -231,18 +241,22 @@ class Exchange_table : Fragment() {
                 val hongkongapiResult = URL(hongkongAPI).readText()
                 val jsonObject = JSONObject(hongkongapiResult)
                 hongkongconversionRate = jsonObject.getJSONObject("rates").getString("THB")
+                val hongkong_num = jsonObject.getJSONObject("rates").getString("THB").toFloat()
+                val hongkong_convert = String.format("%.02f", hongkong_num)
 
                 Log.d("Main", "$hongkongconversionRate")
                 Log.d("Main", hongkongapiResult)
 
                 withContext(Dispatchers.Main) {
-                    hongkongrate?.setText(hongkongconversionRate)
+                    hongkongrate?.setText(hongkong_convert)
                 }
 
             } catch (e: Exception) {
                 Log.e("Main", "$e")
             }
         }
+
+
 
     }
 }

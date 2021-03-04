@@ -18,8 +18,11 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -40,14 +43,29 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
             String senderImage =map.get("senderImage");
             String receiverID =map.get("receiverID");
 
-            if (Build.VERSION.SDK_INT>Build.VERSION_CODES.O)
+            if (message.equals("The exchanger want to match with you , Do you want to accept?"))
             {
-                createOreoNotification(title,message,senderID,senderImage,receiverID);
+                if (Build.VERSION.SDK_INT>Build.VERSION_CODES.O)
+                {
+                    createconfirmOreoNotification(title,message,senderID,senderImage,receiverID);
+                }
+                else
+                {
+                    createconfirmNormalNotificaiton(title,message,senderID,senderImage,receiverID);
+                }
             }
-            else
-            {
-                createNormalNotificaiton(title,message,senderID,senderImage,receiverID);
+            else {
+                if (Build.VERSION.SDK_INT>Build.VERSION_CODES.O)
+                {
+                    createOreoNotification(title,message,senderID,senderImage,receiverID);
+                }
+                else
+                {
+                    createNormalNotificaiton(title,message,senderID,senderImage,receiverID);
+                }
             }
+
+
         }
         super.onMessageReceived(remoteMessage);
     }
@@ -72,8 +90,6 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
         }
 
     }
-
-
 
     private void createNormalNotificaiton(String title,String message,String senderID,String senderImage,String receiverID)
     {
@@ -123,5 +139,116 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
                 .build();
 
         manager.notify(new Random().nextInt(85-65),notification);
+    }
+
+
+    private void createconfirmNormalNotificaiton(String title,String message,String senderID,String senderImage,String receiverID)
+    {
+        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"1000");
+        builder.setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setSmallIcon(R.drawable.ic_dollar)
+                .setAutoCancel(true)
+                .setColor(ResourcesCompat.getColor(getResources(),R.color.purple_500,null))
+
+                .setSound(uri);
+
+//        Intent intent = new Intent(this,ChatActivity.class);
+//        intent.putExtra("name_chatact",title);
+//        intent.putExtra("other_uid_chatact",senderID);
+        FirebaseDatabase.getInstance().getReference("Contacts").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String transaction_num  = snapshot.child(senderID).child(receiverID).child("Transaction_num").getValue().toString();
+                Log.d("check_num",transaction_num);
+                Intent intent =new Intent(getApplicationContext(),ChatActivity.class);
+                intent.putExtra("name_chatact",title);
+                intent.putExtra("other_uid_chatact",senderID);
+                intent.putExtra("transaction_number_ch",transaction_num);
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_ONE_SHOT);
+
+                builder.setContentIntent(pendingIntent)
+                        .setFullScreenIntent(pendingIntent,true);
+
+
+                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.notify(new Random().nextInt(85-65),builder.build());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_ONE_SHOT);
+
+//        builder.setContentIntent(pendingIntent);
+//
+//        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//        manager.notify(new Random().nextInt(85-65),builder.build());
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void createconfirmOreoNotification(String title, String message, String senderID, String senderImage, String receiverID)
+    {
+        NotificationChannel channel =new NotificationChannel("1000","Message",NotificationManager.IMPORTANCE_HIGH);
+        channel.setShowBadge(true);
+        channel.enableLights(true);
+        channel.enableVibration(true);
+        channel.setDescription("Message Description");
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(channel);
+
+
+//        Intent intent =new Intent(this,ChatActivity.class);
+//        intent.putExtra("name_chatact",title);
+//        intent.putExtra("other_uid_chatact",senderID);
+        FirebaseDatabase.getInstance().getReference("Contacts").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String transaction_num  = snapshot.child(senderID).child(receiverID).child("Transaction_num").getValue().toString();
+                Log.d("check_num",transaction_num);
+                Intent intent =new Intent(getApplicationContext(),ChatActivity.class);
+                intent.putExtra("name_chatact",title);
+                intent.putExtra("other_uid_chatact",senderID);
+                intent.putExtra("transaction_number_ch",transaction_num);
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_ONE_SHOT);
+
+                Notification notification = new Notification.Builder(getApplicationContext(),"1000")
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setColor(ResourcesCompat.getColor(getResources(),R.color.purple_500,null))
+                        .setSmallIcon(R.drawable.ic_dollar)
+                        .setContentIntent(pendingIntent)
+                        .setAutoCancel(true)
+                        .setFullScreenIntent(pendingIntent,true)
+                        .build();
+
+                manager.notify(new Random().nextInt(85-65),notification);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_ONE_SHOT);
+//
+//        Notification notification = new Notification.Builder(this,"1000")
+//                .setContentTitle(title)
+//                .setContentText(message)
+//                .setColor(ResourcesCompat.getColor(getResources(),R.color.purple_500,null))
+//                .setSmallIcon(R.drawable.ic_dollar)
+//                .setContentIntent(pendingIntent)
+//                .setAutoCancel(true)
+//                .build();
+//
+//        manager.notify(new Random().nextInt(85-65),notification);
     }
 }

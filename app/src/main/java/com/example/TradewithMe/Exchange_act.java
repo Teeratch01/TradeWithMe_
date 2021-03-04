@@ -33,10 +33,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -56,13 +58,20 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import kotlinx.coroutines.GlobalScope;
 
 
 public class Exchange_act extends Fragment {
@@ -84,6 +93,7 @@ public class Exchange_act extends Fragment {
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private ResultReceiver resultReceiver ;
     SwipeRefreshLayout swipeRefreshLayout;
+    LinearLayout currency_list;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -311,34 +321,105 @@ public class Exchange_act extends Fragment {
 
         name_surnaame = view.findViewById(R.id.name_surname);
         profileImage_exchange = view.findViewById(R.id.profile_image_beforechat);
+        currency_list = view.findViewById(R.id.currency_list);
+        currency_list.setVisibility(View.GONE);
+
 
 
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 String have_currency_text_search = have_currency.getSelectedItem().toString();
                 String want_currency_text_search = want_currency.getSelectedItem().toString();
                 String combine_currency_text_seaarch = want_currency_text_search + "_" + have_currency_text_search;
                 String amount_text = amount.getText().toString();
                 String rates_text = rates.getText().toString();
 
+
+
                 if (have_currency_text_search.equals(want_currency_text_search)) {
                     Toast.makeText(getActivity(), "Plesee selected have currency and want currency diffrent", Toast.LENGTH_SHORT).show();
-                } else {
-                    if (amount_text.isEmpty()) {
-                        amount.setError("Please specific your amount");
-                        amount.requestFocus();
-                        return;
-                    } else if (rates_text.isEmpty()) {
-                        rates.setError("Please specific your rates");
-                        rates.requestFocus();
-                        return;
-                    } else if (latitude == null && longitude == null) {
+                } else
+                    {
+//                    if (amount_text.isEmpty()) {
+//                        amount.setError("Please specific your amount");
+//                        amount.requestFocus();
+//                        return;
+//                    }
+//                    else if (rates_text.isEmpty()) {
+//                        rates.setError("Please specific your rates");
+//                        rates.requestFocus();
+//                        return;
+//                    }
+//
+//                    else
+                        if (latitude == null && longitude == null) {
                         Toast.makeText(getActivity(), "Plesee specific your locaiton", Toast.LENGTH_SHORT).show();
                     } else {
+
+                            currency_list.setVisibility(View.VISIBLE);
+                            TextView currency_to = view.findViewById(R.id.currency_to);
+                            TextView first_converter = view.findViewById(R.id.first_converter);
+                            TextView second_converter = view.findViewById(R.id.second_converter);
+
+                            currency_to.setText(have_currency_text_search+" -> "+want_currency_text_search);
+                            String first_api = "https://api.ratesapi.io/api/latest?base="+have_currency_text_search+"&symbols="+want_currency_text_search;
+                            String second_api = "https://api.ratesapi.io/api/latest?base="+want_currency_text_search+"&symbols="+have_currency_text_search;
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    String first_currency_ill ="",second_currency_ill = "";
+
+                                    try {
+                                        URL url = new URL(first_api);
+                                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                        connection.setReadTimeout(60000);
+
+                                        URL second_url = new URL(second_api);
+                                        HttpURLConnection second_connection = (HttpURLConnection) second_url.openConnection();
+                                        second_connection.setReadTimeout(60000);
+
+                                        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                                        BufferedReader second_in = new BufferedReader(new InputStreamReader(second_connection.getInputStream()));
+
+                                        String first_currency;
+                                        String second_currency;
+                                        while ((first_currency = in.readLine()) != null && (second_currency = second_in.readLine()) != null) {
+
+                                            JSONObject jsonObject = new JSONObject(first_currency);
+                                            Float first_num = Float.parseFloat(jsonObject.getJSONObject("rates").getString(want_currency_text_search));
+                                            first_currency_ill = String.format("%.02f", first_num);
+
+                                            JSONObject second_jsonObject = new JSONObject(second_currency);
+                                            Float second_num = Float.parseFloat(second_jsonObject.getJSONObject("rates").getString(have_currency_text_search));
+                                            second_currency_ill = String.format("%.02f", second_num);
+
+
+                                        }
+                                        JSONObject obj = new JSONObject(first_api);
+
+
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+                                    }
+
+                                    String finalFirst_currency_ill = first_currency_ill;
+                                    String finalSecond_currency_ill = second_currency_ill;
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            first_converter.setText("1 "+have_currency_text_search+" = "+ finalFirst_currency_ill+" "+want_currency_text_search);
+                                            second_converter.setText("1 "+want_currency_text_search+" = "+ finalSecond_currency_ill +" "+have_currency_text_search);
+                                        }
+                                    });
+
+                                }
+                            }).start();
+
                         firebaseExcahngeSearch(combine_currency_text_seaarch);
+
                     }
                 }
 
@@ -468,14 +549,40 @@ public class Exchange_act extends Fragment {
                 Integer rate_check = Integer.parseInt(model.getRates());
                 String uid_check = model.getUid();
                 String uid_get = firebaseAuth.getInstance().getCurrentUser().getUid();
-                Integer amount_int = Integer.valueOf(amount.getText().toString());
-                Integer rate_int = Integer.valueOf(rates.getText().toString());
+                Integer amount_int = null,rate_int = null;
+                if (!amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
+                {
+                    amount_int = Integer.valueOf(amount.getText().toString());
+                    rate_int = Integer.valueOf(rates.getText().toString());
+                }
 
 
                 if (latitude_check <= Double.valueOf(latitude)+0.1 && latitude_check>=Double.valueOf(latitude)-0.1 ){
                     if (longitude_check <= Double.valueOf(longitude)+0.1 && longitude_check>=Double.valueOf(longitude)-0.1 )
                     {
-                        if (amount_check <= amount_int && rate_check <= rate_int)
+                        if (amount_int != null && rate_int !=null)
+                        {
+                            if (amount_check <= amount_int && rate_check <= rate_int)
+                            {
+                                if (!uid_check.equals(uid_get))
+                                {
+                                    holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
+                                    holder.itemView.setVisibility(View.VISIBLE);
+                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                }
+                                else
+                                {
+                                    holder.itemView.setVisibility(View.GONE);
+                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                }
+                            }
+                            else
+                            {
+                                holder.itemView.setVisibility(View.GONE);
+                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                            }
+                        }
+                        else
                         {
                             if (!uid_check.equals(uid_get))
                             {
@@ -489,11 +596,7 @@ public class Exchange_act extends Fragment {
                                 holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
                             }
                         }
-                        else
-                        {
-                            holder.itemView.setVisibility(View.GONE);
-                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                        }
+
 
                     }
                     else {
@@ -539,7 +642,7 @@ public class Exchange_act extends Fragment {
                 final String user_id_clickable = getRef(position).getKey();
                 DatabaseReference currency_bfchat = FirebaseDatabase.getInstance().getReference("Currency").child(user_id_clickable);
 
-                currency_bfchat.addValueEventListener(new ValueEventListener() {
+                currency_bfchat.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                        String user_id_bfchat=snapshot.child("uid").getValue().toString();

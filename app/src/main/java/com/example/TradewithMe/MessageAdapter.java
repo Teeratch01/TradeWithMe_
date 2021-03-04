@@ -1,8 +1,11 @@
 package com.example.TradewithMe;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.provider.ContactsContract;
 import android.text.Layout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.dynamic.IFragmentWrapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,15 +34,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private List<Messages> userMessageList;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference userRef;
+    private String previous_date="";
+    private Context context;
 
-    public MessageAdapter(List<Messages> userMessageList)
+    public MessageAdapter(List<Messages> userMessageList,Context context)
     {
         this.userMessageList = userMessageList;
+        this.context = context;
     }
 
     public class MessageViewHolder extends RecyclerView.ViewHolder
     {
-        public TextView senderMessageText,receiverMessageText,timesender,timereceiver,timeimagesender,timeimagereceiver;
+        public TextView senderMessageText,receiverMessageText,timesender,timereceiver,timeimagesender,timeimagereceiver,date_in_chat;
         public CircleImageView receiverProfileImage;
         public ImageView messageSenderPicture,messageReceiverImage;
 
@@ -53,6 +60,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageReceiverImage = itemView.findViewById(R.id.message_receiver_image_view);
             timeimagesender = itemView.findViewById(R.id.time_sender_image_text);
             timeimagereceiver = itemView.findViewById(R.id.time_receiver_image_text);
+            date_in_chat = itemView.findViewById(R.id.date_text);
 
         }
     }
@@ -73,6 +81,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         String fromUserID = messages.getFrom();
         String fromMessageType = messages.getType();
+        String fromdate = messages.getDate();
+
 
         userRef = FirebaseDatabase.getInstance().getReference("Users").child(fromUserID);
         userRef.addValueEventListener(new ValueEventListener() {
@@ -92,6 +102,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
         });
 
+
         holder.receiverMessageText.setVisibility(View.GONE);
         holder.receiverProfileImage.setVisibility(View.GONE);
         holder.senderMessageText.setVisibility(View.GONE);
@@ -101,6 +112,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         holder.timereceiver.setVisibility(View.GONE);
         holder.timeimagesender.setVisibility(View.GONE);
         holder.timeimagereceiver.setVisibility(View.GONE);
+        holder.date_in_chat.setVisibility(View.GONE);
+
+
+
 
         if (fromMessageType.equals("text"))
         {
@@ -119,6 +134,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.senderMessageText.setText(messages.getMessage());
                 holder.timesender.setText(messages.getTime());
 
+//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
+//                {
+//                    holder.date_in_chat.setVisibility(View.VISIBLE);
+//                    holder.date_in_chat.setText(fromdate);
+//                    previous_date = fromdate;
+//                }
+//                else
+//                {
+//                    holder.date_in_chat.setVisibility(View.GONE);
+//                }
+
+
+
+
 //                holder.last_text.setText(messages.getMessage());
             }
             else {
@@ -131,6 +160,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.receiverMessageText.setText(messages.getMessage());
                 holder.timereceiver.setText(messages.getTime());
 //                holder.last_text.setText(messages.getMessage());
+//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
+//                {
+//                    holder.date_in_chat.setVisibility(View.VISIBLE);
+//                    holder.date_in_chat.setText(fromdate);
+//                    previous_date = fromdate;
+//                }
+//                else
+//                {
+//                    holder.date_in_chat.setVisibility(View.GONE);
+//                }
+
             }
         }
         else if (fromMessageType.equals("image"))
@@ -139,9 +179,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             {
                 holder.messageSenderPicture.setVisibility(View.VISIBLE);
                 Picasso.get().load(messages.getMessage()).into(holder.messageSenderPicture);
+                holder.messageSenderPicture.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent pic_intent = new Intent(context,Illustrate_pic.class);
+                        pic_intent.putExtra("pic_illustrate",messages.getMessage());
+                        v.getContext().startActivity(pic_intent);
+                    }
+                });
 
                 holder.timeimagesender.setVisibility(View.VISIBLE);
                 holder.timeimagesender.setText(messages.getTime());
+//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
+//                {
+//                    holder.date_in_chat.setVisibility(View.VISIBLE);
+//                    holder.date_in_chat.setText(fromdate);
+//                    previous_date = fromdate;
+//                }
+//                else
+//                {
+//                    holder.date_in_chat.setVisibility(View.GONE);
+//                }
+
             }
             else {
                 holder.receiverProfileImage.setVisibility(View.VISIBLE);
@@ -149,8 +208,29 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 Picasso.get().load(messages.getMessage()).into(holder.messageReceiverImage);
 
+                holder.messageReceiverImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent pic_intent = new Intent(context,Illustrate_pic.class);
+                        pic_intent.putExtra("pic_illustrate",messages.getMessage());
+                        v.getContext().startActivity(pic_intent);
+                    }
+                });
+
                 holder.timeimagereceiver.setVisibility(View.VISIBLE);
                 holder.timeimagereceiver.setText(messages.getTime());
+
+//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
+//                {
+//                    holder.date_in_chat.setVisibility(View.VISIBLE);
+//                    holder.date_in_chat.setText(fromdate);
+//                    previous_date = fromdate;
+//                }
+//                else
+//                {
+//                    holder.date_in_chat.setVisibility(View.GONE);
+//                }
+
             }
 
         }

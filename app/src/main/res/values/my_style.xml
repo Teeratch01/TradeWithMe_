@@ -15,5 +15,30 @@
         <item name="colorControlActivated">#CCCC00</item>
     </style>
 
+    <style name="AlertDialogCustom" parent="Theme.AppCompat.Light.Dialog.Alert">
+    //whichever parent theme you want to use here
+    //add these 2 to allow all APIs
+    <item name="buttonBarPositiveButtonStyle">@style/PositiveAlertButtonStyle</item>
+    <item name="android:buttonBarPositiveButtonStyle">@style/PositiveAlertButtonStyle</item>
+    <item name="buttonBarNegativeButtonStyle">@style/NegativeAlertButtonStyle</item>
+    <item name="android:buttonBarNegativeButtonStyle">@style/NegativeAlertButtonStyle</item>
+    </style>
+
+    //change the marginStart of the Positive button to put a gap between the buttons
+    //you can also change text color and background etc. here
+    <style name="PositiveAlertButtonStyle">
+    <item name="android:layout_marginStart">10dp</item>
+    <item name="android:textColor">#FFFFFF</item>
+    <item name="backgroundTint">#62959c</item>
+    </style>
+
+    <style name="NegativeAlertButtonStyle">
+        <item name="android:padding">10dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="backgroundTint">#62959c</item>
+    </style>
+
+
+
 
 </resources>
