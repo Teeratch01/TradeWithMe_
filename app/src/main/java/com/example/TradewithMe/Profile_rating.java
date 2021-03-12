@@ -27,7 +27,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class Profile_rating extends AppCompatActivity {
 
     String name,email,phone_number,image,uid_exchanger,uid_current_user,transaction_number;
-    TextView name_ill,email_ill,phone_number_ill,rating_ill;
+    TextView name_ill,email_ill,phone_number_ill,rating_ill,feedback_detail;
     CircleImageView profile_iamge_ill;
     Button Close,start_chat;
     DatabaseReference reference;
@@ -113,42 +113,27 @@ public class Profile_rating extends AppCompatActivity {
                         transaction_number
                 );
 
-                reference.child(uid_current_user).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        if (!snapshot.hasChild(uid_exchanger))
-//                        {
-                            reference.child(uid_current_user).child(uid_exchanger).setValue(setValue);
-//                        }
 
-                    }
+                reference.child(uid_current_user).child(uid_exchanger).setValue(setValue);
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                reference.child(uid_exchanger).child(uid_current_user).setValue(setValue);
 
-                    }
-                });
-
-                reference.child(uid_exchanger).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                       if (!snapshot.hasChild(uid_current_user))
-//                       {
-                           reference.child(uid_exchanger).child(uid_current_user).setValue(setValue);
-//                       }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
 
                 Intent chat_act_intent = new Intent(getApplicationContext(),ChatActivity.class);
                 chat_act_intent.putExtra("name_chatact",name);
                 chat_act_intent.putExtra("other_uid_chatact",uid_exchanger);
                 chat_act_intent.putExtra("transaction_number_ch",transaction_number);
                 startActivity(chat_act_intent);
+            }
+        });
+
+        feedback_detail = findViewById(R.id.feedback_detail_rating);
+        feedback_detail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(),Feedback.class);
+                intent.putExtra("feedback_id",uid_exchanger);
+                startActivity(intent);
             }
         });
 

@@ -106,6 +106,7 @@ public class Direct_Message extends AppCompatActivity {
                                             if (snapshot.hasChild("Transaction_num"))
                                             {
                                                 String transaction_number = snapshot.child("Transaction_num").getValue().toString();
+                                                Log.d("check_transacnumber0",transaction_number);
                                                 FirebaseDatabase.getInstance().getReference("Matched_user").addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot snapshot) {

@@ -48,7 +48,7 @@ public class Profile extends Fragment {
     private CallbackManager callbackManager;
 
     //For illustrate
-    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile,rating_number;
+    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile,rating_number,feedback_datail;
     private DatabaseReference databaseReference,providerefference;
     private String userID;
 
@@ -263,6 +263,17 @@ public class Profile extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
+            }
+        });
+
+        feedback_datail = view.findViewById(R.id.feedback_detail);
+        feedback_datail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(getContext(),Feedback.class);
+                intent.putExtra("feedback_id",current_userID);
+                startActivity(intent);
             }
         });
 

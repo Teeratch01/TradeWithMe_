@@ -187,6 +187,7 @@ public class Exchange_act extends Fragment {
                 String rates_text = rates.getText().toString();
                 String userid = firebaseAuth.getCurrentUser().getUid();
                 String combine_currency = have_currency_text + "_" + want_currency_text;
+                String matched = "no";
 
                 if (have_currency_text.equals(want_currency_text)) {
                     Toast.makeText(getActivity(), "Plesee selected have currency and want currency diffrent", Toast.LENGTH_SHORT).show();
@@ -211,7 +212,8 @@ public class Exchange_act extends Fragment {
                                 userid,
                                 latitude,
                                 longitude,
-                                combine_currency
+                                combine_currency,
+                                matched
                         );
 
 
@@ -549,6 +551,8 @@ public class Exchange_act extends Fragment {
                 Integer rate_check = Integer.parseInt(model.getRates());
                 String uid_check = model.getUid();
                 String uid_get = firebaseAuth.getInstance().getCurrentUser().getUid();
+                String status_check = model.getMatched();
+                Log.d("check_status",status_check);
                 Integer amount_int = null,rate_int = null;
                 if (!amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
                 {
@@ -566,9 +570,19 @@ public class Exchange_act extends Fragment {
                             {
                                 if (!uid_check.equals(uid_get))
                                 {
-                                    holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                    holder.itemView.setVisibility(View.VISIBLE);
-                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                    if (status_check.equals("no"))
+                                    {
+                                        holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
+                                        holder.itemView.setVisibility(View.VISIBLE);
+                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                        Log.d("check_in_now","check_in");
+                                    }
+                                    else if (status_check.equals("yes"))
+                                    {
+                                        holder.itemView.setVisibility(View.GONE);
+                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                    }
+
                                 }
                                 else
                                 {
@@ -586,9 +600,19 @@ public class Exchange_act extends Fragment {
                         {
                             if (!uid_check.equals(uid_get))
                             {
-                                holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                holder.itemView.setVisibility(View.VISIBLE);
-                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                if (status_check.equals("no"))
+                                {
+                                    holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
+                                    holder.itemView.setVisibility(View.VISIBLE);
+                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                }
+                                else if (status_check.equals("yes"))
+                                {
+                                    holder.itemView.setVisibility(View.GONE);
+                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                }
+
                             }
                             else
                             {

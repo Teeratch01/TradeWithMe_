@@ -73,9 +73,9 @@ public class Chat_matchActivity extends AppCompatActivity {
     String name_fromchat,messagereceiverID,messagesenderID,latitude,longitude,myUri = "",transaction_num;
     TextView name_chatmatch,time_chatmatch,rating_name;
     ImageButton SendMessageButton,SendLocationButton,SendImageButton;
-    EditText MessageInputText;
+    EditText MessageInputText,rating_comment;
     FirebaseAuth firebaseAuth;
-    DatabaseReference rootRef,record_ref,success_ref,matched_ref;
+    DatabaseReference rootRef,record_ref,success_ref,matched_ref,feedback_ref,contact_ref;
     StorageReference firebaseStorage;
     MessageAdapter messageAdapter;
     RecyclerView userMessageList;
@@ -87,7 +87,7 @@ public class Chat_matchActivity extends AppCompatActivity {
     Button success_btn,Update_rank_btn;
     Dialog rankDailog;
     RatingBar ratingBar;
-    long maxIdsender,maxIdreceiver;
+    long maxIdsender,maxIdreceiver,maxIdfeedback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -249,6 +249,8 @@ public class Chat_matchActivity extends AppCompatActivity {
         record_ref = FirebaseDatabase.getInstance().getReference("Record");
         success_ref = FirebaseDatabase.getInstance().getReference("Success_user");
         matched_ref = FirebaseDatabase.getInstance().getReference("Matched_user");
+        feedback_ref = FirebaseDatabase.getInstance().getReference("Feedback");
+        contact_ref = FirebaseDatabase.getInstance().getReference("Contacts");
         record_ref.child(messagesenderID).child("Success").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -271,6 +273,22 @@ public class Chat_matchActivity extends AppCompatActivity {
                 if (snapshot.exists())
                 {
                     maxIdreceiver = snapshot.getChildrenCount();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        feedback_ref.child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists())
+                {
+                    maxIdfeedback = snapshot.getChildrenCount();
                 }
 
             }
@@ -305,6 +323,8 @@ public class Chat_matchActivity extends AppCompatActivity {
                 Update_rank_btn = rankDailog.findViewById(R.id.rank_dialog_button);
                 Update_rank_btn.setBackgroundColor(ResourcesCompat.getColor(getResources(),R.color.color_rating,null));
 
+                rating_comment = rankDailog.findViewById(R.id.rating_comment);
+
                 matched_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -327,14 +347,14 @@ public class Chat_matchActivity extends AppCompatActivity {
 
                             }
                             else {
-                                record_ref.child(messagesenderID).child("Success").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
+//                                record_ref.child(messagesenderID).child("Success").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
                                 success_ref.child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                                         if (!snapshot.hasChild(messagesenderID))
                                         {
                                             success_ref.child(messagereceiverID).child(messagesenderID).setValue(set_success);
-                                            record_ref.child(messagereceiverID).child("Success").child(String.valueOf(maxIdreceiver+1)).setValue(setValuereceiver);
+//                                            record_ref.child(messagereceiverID).child("Success").child(String.valueOf(maxIdreceiver+1)).setValue(setValuereceiver);
                                         }
                                     }
 
@@ -347,92 +367,136 @@ public class Chat_matchActivity extends AppCompatActivity {
                                 Update_rank_btn.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
+
 //                        rankDailog.dismiss();
                                         Log.d("check_rating", String.valueOf(ratingBar.getRating()));
                                         Float user_rating = ratingBar.getRating();
-                                        FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                if (snapshot.hasChild("ratings"))
-                                                {
-                                                    Float current_user_rating = Float.valueOf(snapshot.child("ratings").getValue().toString());
-                                                    Float update_user_rating = (user_rating+current_user_rating)/2;
+                                        if (user_rating == 0.0) {
+                                            Toast.makeText(Chat_matchActivity.this, "Plesee rate to the other exchanger", Toast.LENGTH_SHORT).show();
+                                        } else {
 
-                                                    HashMap map = new HashMap();
-                                                    map.put("ratings",String.format("%.02f", update_user_rating));
-                                                    FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task task) {
-                                                            FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                @Override
-                                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                                    if (snapshot.hasChild(transaction_num))
-                                                                    {
-                                                                        FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
-                                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                        rankDailog.dismiss();
-                                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                        startActivity(backto_firstpage);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                        rankDailog.dismiss();
-                                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                        startActivity(backto_firstpage);
-                                                                    }
-                                                                }
-
-                                                                @Override
-                                                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                                                }
-                                                            });
-                                                        }
-                                                    });
+                                            FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    if (snapshot.hasChild("image"))
+                                                    {
+                                                        String image = snapshot.child("image").getValue().toString();
+                                                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                        getToken("The transaction is successful,Please rate to the other exchanger",messagesenderID,image,messagereceiverID,name);
+                                                    }
                                                 }
-                                                else{
-                                                    HashMap map = new HashMap();
-                                                    map.put("ratings",ratingBar.getRating());
-                                                    FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task task) {
-                                                            FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                @Override
-                                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                                    if (snapshot.hasChild(transaction_num))
-                                                                    {
-                                                                        FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
-                                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                        rankDailog.dismiss();
-                                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                        startActivity(backto_firstpage);
 
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                        rankDailog.dismiss();
-                                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                        startActivity(backto_firstpage);
-                                                                    }
-                                                                }
-
-                                                                @Override
-                                                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                                                }
-                                                            });
-                                                        }
-                                                    });
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
 
                                                 }
-                                            }
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
+                                            });
 
-                                            }
-                                        });
+                                            FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    if (snapshot.hasChild("ratings")) {
+                                                        Float current_user_rating = Float.valueOf(snapshot.child("ratings").getValue().toString());
+                                                        Float update_user_rating = (user_rating + current_user_rating) / 2;
+
+                                                        HashMap map = new HashMap();
+                                                        map.put("ratings", String.format("%.02f", update_user_rating));
+
+                                                        String comment = rating_comment.getText().toString().trim();
+
+                                                        if (comment.equals(""))
+                                                        {
+                                                            Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,"No comment");
+                                                            feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
+                                                        }
+                                                        else
+                                                        {
+                                                            Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,comment);
+                                                            feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
+                                                        }
+
+                                                        FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task task) {
+                                                                FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        if (snapshot.hasChild(transaction_num)) {
+                                                                            FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
+                                                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                            rankDailog.dismiss();
+                                                                            Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                            startActivity(backto_firstpage);
+                                                                        } else {
+                                                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                            rankDailog.dismiss();
+                                                                            Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                            startActivity(backto_firstpage);
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    } else {
+                                                        HashMap map = new HashMap();
+                                                        map.put("ratings", ratingBar.getRating());
+
+                                                        String comment = rating_comment.getText().toString().trim();
+
+                                                        if (comment.equals(""))
+                                                        {
+                                                            Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,"No comment");
+                                                            feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
+                                                        }
+                                                        else
+                                                        {
+                                                            Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,comment);
+                                                            feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
+                                                        }
+
+                                                        FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task task) {
+                                                                FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        if (snapshot.hasChild(transaction_num)) {
+                                                                            FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
+                                                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                            rankDailog.dismiss();
+                                                                            Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                            startActivity(backto_firstpage);
+
+                                                                        } else {
+                                                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                            rankDailog.dismiss();
+                                                                            Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                            startActivity(backto_firstpage);
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
+                                        }
                                     }
                                 });
                                 rankDailog.show();
@@ -447,120 +511,8 @@ public class Chat_matchActivity extends AppCompatActivity {
                     }
                 });
 
-
-//                record_ref.child(messagesenderID).child("Success").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
-//                success_ref.child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        if (!snapshot.hasChild(messagesenderID))
-//                        {
-//                            success_ref.child(messagereceiverID).child(messagesenderID).setValue(set_success);
-//                            record_ref.child(messagereceiverID).child("Success").child(String.valueOf(maxIdreceiver+1)).setValue(setValuereceiver);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//
-//                    }
-//                });
-//
-//                Update_rank_btn.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-////                        rankDailog.dismiss();
-//                        Log.d("check_rating", String.valueOf(ratingBar.getRating()));
-//                        Float user_rating = ratingBar.getRating();
-//                        FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
-//                            @Override
-//                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                                if (snapshot.hasChild("ratings"))
-//                                {
-//                                    Float current_user_rating = Float.valueOf(snapshot.child("ratings").getValue().toString());
-//                                    Float update_user_rating = (user_rating+current_user_rating)/2;
-//
-//                                    HashMap map = new HashMap();
-//                                    map.put("ratings",String.format("%.02f", update_user_rating));
-//                                    FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
-//                                        @Override
-//                                        public void onComplete(@NonNull Task task) {
-//                                            FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
-//                                                @Override
-//                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                                                    if (snapshot.hasChild(transaction_num))
-//                                                    {
-//                                                        FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
-//                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-//                                                        rankDailog.dismiss();
-//                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-//                                                        startActivity(backto_firstpage);
-//                                                    }
-//                                                    else
-//                                                    {
-//                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-//                                                        rankDailog.dismiss();
-//                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-//                                                        startActivity(backto_firstpage);
-//                                                    }
-//                                                }
-//
-//                                                @Override
-//                                                public void onCancelled(@NonNull DatabaseError error) {
-//
-//                                                }
-//                                            });
-//                                        }
-//                                    });
-//                                }
-//                                else{
-//                                    HashMap map = new HashMap();
-//                                    map.put("ratings",ratingBar.getRating());
-//                                    FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
-//                                        @Override
-//                                        public void onComplete(@NonNull Task task) {
-//                                            FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
-//                                                @Override
-//                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                                                    if (snapshot.hasChild(transaction_num))
-//                                                    {
-//                                                        FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
-//                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-//                                                        rankDailog.dismiss();
-//                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-//                                                        startActivity(backto_firstpage);
-//
-//                                                    }
-//                                                    else
-//                                                    {
-//                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-//                                                        rankDailog.dismiss();
-//                                                        Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-//                                                        startActivity(backto_firstpage);
-//                                                    }
-//                                                }
-//
-//                                                @Override
-//                                                public void onCancelled(@NonNull DatabaseError error) {
-//
-//                                                }
-//                                            });
-//                                        }
-//                                    });
-//
-//                                }
-//                            }
-//                            @Override
-//                            public void onCancelled(@NonNull DatabaseError error) {
-//
-//                            }
-//                        });
-//                    }
-//                });
-//                rankDailog.show();
             }
         });
-
-
 
     }
 
@@ -572,6 +524,14 @@ public class Chat_matchActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.hasChild(messagesenderID)) {
                     if (snapshot.child(messagesenderID).hasChild(messagereceiverID)) {
+
+                        String status = "Ok";
+                        SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+                        String date_for = date.format(new Date());
+
+                        Record setValuesender = new Record(status,messagereceiverID,date_for);
+                        Record setValuereceiver = new Record(status,messagesenderID,date_for);
+
                         rankDailog = new Dialog(Chat_matchActivity.this);
                         rankDailog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         rankDailog.setContentView(R.layout.rank_dialog);
@@ -585,6 +545,8 @@ public class Chat_matchActivity extends AppCompatActivity {
                         rating_name = rankDailog.findViewById(R.id.rating_name);
                         rating_name.setText("Rate " + name_fromchat + "!");
 
+                        rating_comment = rankDailog.findViewById(R.id.rating_comment);
+
                         Update_rank_btn = rankDailog.findViewById(R.id.rank_dialog_button);
                         Update_rank_btn.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.color_rating, null));
 
@@ -594,95 +556,221 @@ public class Chat_matchActivity extends AppCompatActivity {
 //                                rankDailog.dismiss();
                                 Log.d("check_rating", String.valueOf(ratingBar.getRating()));
                                 Float user_rating = ratingBar.getRating();
-                                FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if (snapshot.hasChild("ratings")) {
-                                            Float current_user_rating = Float.valueOf(snapshot.child("ratings").getValue().toString());
-                                            Float update_user_rating = (user_rating + current_user_rating) / 2;
+                                if (user_rating == 0.0) {
+                                    Toast.makeText(Chat_matchActivity.this, "Plesee rate to the other exchanger", Toast.LENGTH_SHORT).show();
+                                }
+                                else {
 
-                                            HashMap map = new HashMap();
-                                            map.put("ratings", String.format("%.02f", update_user_rating));
-                                            FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
-                                                @Override
-                                                public void onComplete(@NonNull Task task) {
-                                                    FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                            if(snapshot.hasChild(transaction_num))
-                                                            {
-                                                                FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
-                                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                rankDailog.dismiss();
-                                                                Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                startActivity(backto_firstpage);
-                                                            }
-                                                            else
-                                                            {
-                                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                rankDailog.dismiss();
-                                                                Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                startActivity(backto_firstpage);
-                                                            }
-                                                        }
+                                    record_ref.child(messagesenderID).child("Success").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
+                                    record_ref.child(messagereceiverID).child("Success").child(String.valueOf(maxIdreceiver+1)).setValue(setValuereceiver);
 
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError error) {
+                                    FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            if (snapshot.hasChild("ratings")) {
+                                                Float current_user_rating = Float.valueOf(snapshot.child("ratings").getValue().toString());
+                                                Float update_user_rating = (user_rating + current_user_rating) / 2;
 
-                                                        }
-                                                    });
+                                                HashMap map = new HashMap();
+                                                map.put("ratings", String.format("%.02f", update_user_rating));
 
+                                                String comment = rating_comment.getText().toString().trim();
+
+                                                if (comment.equals(""))
+                                                {
+                                                    Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,"No comment");
+                                                    feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
                                                 }
-                                            });
-                                        } else {
-                                            HashMap map = new HashMap();
-                                            map.put("ratings", ratingBar.getRating());
-                                            FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
-                                                @Override
-                                                public void onComplete(@NonNull Task task) {
-
-                                                    FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                            if(snapshot.hasChild(transaction_num))
-                                                            {
-                                                                FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
-                                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                rankDailog.dismiss();
-                                                                Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                startActivity(backto_firstpage);
-                                                            }
-                                                            else
-                                                            {
-                                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                                rankDailog.dismiss();
-                                                                Intent backto_firstpage = new Intent(getApplicationContext(),Navigation.class);
-                                                                startActivity(backto_firstpage);
-                                                            }
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError error) {
-
-                                                        }
-                                                    });
-
+                                                else
+                                                {
+                                                    Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,comment);
+                                                    feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
                                                 }
-                                            });
 
+                                                FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task task) {
+                                                        FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                if (snapshot.hasChild(transaction_num)) {
+                                                                    FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
+
+                                                                    contact_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                            HashMap map = new HashMap();
+                                                                            map.put("Transaction_num","");
+                                                                            if (!snapshot.child(messagesenderID).child(messagereceiverID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+                                                                            }
+                                                                            if (!snapshot.child(messagereceiverID).child(messagesenderID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+                                                                            }
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                                                        }
+                                                                    });
+
+//                                                                    HashMap map = new HashMap();
+//                                                                    map.put("Transaction_num","");
+//                                                                    contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+//                                                                    contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+
+                                                                    FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    rankDailog.dismiss();
+                                                                    Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                    startActivity(backto_firstpage);
+                                                                } else {
+
+                                                                    contact_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                            HashMap map = new HashMap();
+                                                                            map.put("Transaction_num","");
+                                                                            if (!snapshot.child(messagesenderID).child(messagereceiverID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+                                                                            }
+                                                                            if (!snapshot.child(messagereceiverID).child(messagesenderID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+                                                                            }
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                                                        }
+                                                                    });
+
+                                                                    FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    rankDailog.dismiss();
+                                                                    Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                    startActivity(backto_firstpage);
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError error) {
+
+                                                            }
+                                                        });
+
+                                                    }
+                                                });
+                                            } else {
+                                                HashMap map = new HashMap();
+                                                map.put("ratings", ratingBar.getRating());
+
+                                                String comment = rating_comment.getText().toString().trim();
+
+                                                if (comment.equals(""))
+                                                {
+                                                    Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,"No comment");
+                                                    feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
+                                                }
+                                                else
+                                                {
+                                                    Record_success update_feedback = new Record_success(String.valueOf(user_rating),messagesenderID,date_for,comment);
+                                                    feedback_ref.child(messagereceiverID).child(String.valueOf(maxIdfeedback+1)).setValue(update_feedback);
+                                                }
+
+                                                FirebaseDatabase.getInstance().getReference("Users").child(messagereceiverID).updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task task) {
+
+                                                        FirebaseDatabase.getInstance().getReference("Currency").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                if (snapshot.hasChild(transaction_num)) {
+                                                                    FirebaseDatabase.getInstance().getReference("Currency").child(transaction_num).getRef().removeValue();
+
+                                                                    contact_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                            HashMap map = new HashMap();
+                                                                            map.put("Transaction_num","");
+                                                                            if (!snapshot.child(messagesenderID).child(messagereceiverID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+                                                                            }
+                                                                            if (!snapshot.child(messagereceiverID).child(messagesenderID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+                                                                            }
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                                                        }
+                                                                    });
+
+                                                                    FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    rankDailog.dismiss();
+                                                                    Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                    startActivity(backto_firstpage);
+                                                                } else {
+                                                                    contact_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                            HashMap map = new HashMap();
+                                                                            map.put("Transaction_num","");
+                                                                            if (!snapshot.child(messagesenderID).child(messagereceiverID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+                                                                            }
+                                                                            if (!snapshot.child(messagereceiverID).child(messagesenderID).child("Transaction_num").equals(""))
+                                                                            {
+                                                                                contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+                                                                            }
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                                                        }
+                                                                    });
+                                                                    FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                                    rankDailog.dismiss();
+                                                                    Intent backto_firstpage = new Intent(getApplicationContext(), Navigation.class);
+                                                                    startActivity(backto_firstpage);
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError error) {
+
+                                                            }
+                                                        });
+
+                                                    }
+                                                });
+
+
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
 
                                         }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
+                                    });
+                                }
                             }
                         });
 
@@ -690,9 +778,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                     }
 
                 }
-
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 

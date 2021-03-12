@@ -1,7 +1,7 @@
 package com.example.TradewithMe;
 
 public class ExchangeData {
-    public String have_currency,amount,want_currency,rates,uid,latitude,longitude,combine_currency;
+    public String have_currency,amount,want_currency,rates,uid,latitude,longitude,combine_currency,matched;
 
     public String getHave_currency() {
         return have_currency;
@@ -68,13 +68,21 @@ public class ExchangeData {
         this.combine_currency = combine_currency;
     }
 
+    public String getMatched() {
+        return matched;
+    }
+
+    public void setMatched(String matched) {
+        this.matched = matched;
+    }
+
     public ExchangeData()
     {
 
     }
 
 
-    public ExchangeData(String have_currency, String amount, String want_currency, String rates, String uid, String latitude, String longitude,String combine_currency) {
+    public ExchangeData(String have_currency, String amount, String want_currency, String rates, String uid, String latitude, String longitude,String combine_currency,String matched) {
         this.have_currency = have_currency;
         this.amount = amount;
         this.want_currency = want_currency;
@@ -83,5 +91,6 @@ public class ExchangeData {
         this.latitude= latitude;
         this.longitude = longitude;
         this.combine_currency = combine_currency;
+        this.matched = matched;
     }
 }

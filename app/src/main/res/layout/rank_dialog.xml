@@ -6,7 +6,7 @@
     android:padding="50dp"
     android:background="@drawable/dialog_bf">
 
-    <TextView android:text="Doctor's Name" android:id="@+id/rating_name"
+    <TextView android:text="Name" android:id="@+id/rating_name"
         android:textSize="24dp" android:layout_marginTop="10dp"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:textColor="@color/black"
@@ -20,6 +20,16 @@
         android:numStars="5" android:stepSize="0.5"
         android:theme="@style/RatingBar"
         android:isIndicator="false"/>
+
+    <EditText
+        android:id="@+id/rating_comment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint=" Optional Comment"
+        android:paddingBottom="70dp"
+        android:background="@drawable/textinputborder"
+        android:inputType="textPersonName" />
 
     <Button android:id="@+id/rank_dialog_button"
         android:layout_height="wrap_content"

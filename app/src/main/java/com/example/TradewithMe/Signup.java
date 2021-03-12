@@ -19,7 +19,9 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class Signup extends AppCompatActivity {
@@ -132,6 +134,11 @@ public class Signup extends AppCompatActivity {
 
                             if (task.isSuccessful()){
                                 Toast.makeText(Signup.this,"User has been registerd succesfully",Toast.LENGTH_LONG).show();
+                                String current_id = mAuth.getCurrentUser().getUid();
+                                HashMap map = new HashMap();
+                                String devicetoken = FirebaseInstanceId.getInstance().getToken();
+                                map.put("token",devicetoken);
+                                FirebaseDatabase.getInstance().getReference("Users").child(current_id).updateChildren(map);
                                 Intent intent = new Intent(Signup.this,Navigation.class);
                                 startActivity(intent);
                             }
