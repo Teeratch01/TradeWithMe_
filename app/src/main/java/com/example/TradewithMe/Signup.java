@@ -133,13 +133,13 @@ public class Signup extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Void> task) {
 
                             if (task.isSuccessful()){
-                                Toast.makeText(Signup.this,"User has been registerd succesfully",Toast.LENGTH_LONG).show();
-                                String current_id = mAuth.getCurrentUser().getUid();
-                                HashMap map = new HashMap();
-                                String devicetoken = FirebaseInstanceId.getInstance().getToken();
-                                map.put("token",devicetoken);
-                                FirebaseDatabase.getInstance().getReference("Users").child(current_id).updateChildren(map);
-                                Intent intent = new Intent(Signup.this,Navigation.class);
+//                                Toast.makeText(Signup.this,"User has been registerd succesfully",Toast.LENGTH_LONG).show();
+//                                String current_id = mAuth.getCurrentUser().getUid();
+//                                HashMap map = new HashMap();
+//                                String devicetoken = FirebaseInstanceId.getInstance().getToken();
+//                                map.put("token",devicetoken);
+//                                FirebaseDatabase.getInstance().getReference("Users").child(current_id).updateChildren(map);
+                                Intent intent = new Intent(Signup.this,Identify_verification_id.class);
                                 startActivity(intent);
                             }
                             else{

@@ -198,6 +198,8 @@ public class EditProfile extends AppCompatActivity {
 
             uploadTask = fileRef.putFile(imageURI);
 
+
+
             uploadTask.continueWithTask(new Continuation() {
                 @Override
                 public Object then(@NonNull Task task) throws Exception {

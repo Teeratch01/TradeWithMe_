@@ -196,11 +196,24 @@ public class Exchange_act extends Fragment {
                         amount.setError("Please specific your amount");
                         amount.requestFocus();
                         return;
-                    } else if (rates_text.isEmpty()) {
+                    }
+                    else if (amount_text.startsWith("0")){
+                        amount.setError("Please put the right form of amount");
+                        amount.requestFocus();
+                        return;
+                    }
+                    else if (rates_text.isEmpty()) {
                         rates.setError("Please specific your rates");
                         rates.requestFocus();
                         return;
-                    } else if (latitude == null && longitude == null) {
+                    }
+                    else if (rates_text.startsWith("0"))
+                    {
+                        rates.setError("Please put the right form of rate");
+                        rates.requestFocus();
+                        return;
+                    }
+                    else if (latitude == null && longitude == null) {
                         Toast.makeText(getActivity(), "Plesee specific your locaiton", Toast.LENGTH_SHORT).show();
                     } else {
 
@@ -343,6 +356,17 @@ public class Exchange_act extends Fragment {
                     Toast.makeText(getActivity(), "Plesee selected have currency and want currency diffrent", Toast.LENGTH_SHORT).show();
                 } else
                     {
+                        if (amount_text.startsWith("0")){
+                        amount.setError("Please put the right form of amount");
+                        amount.requestFocus();
+                        return;
+                    }
+                    else if (rates_text.startsWith("0"))
+                    {
+                        rates.setError("Please put the right form of rate");
+                        rates.requestFocus();
+                        return;
+                    }
 //                    if (amount_text.isEmpty()) {
 //                        amount.setError("Please specific your amount");
 //                        amount.requestFocus();
@@ -559,13 +583,25 @@ public class Exchange_act extends Fragment {
                     amount_int = Integer.valueOf(amount.getText().toString());
                     rate_int = Integer.valueOf(rates.getText().toString());
                 }
+                else if (!amount.getText().toString().equals("")&&rates.getText().toString().equals(""))
+                {
+                    amount_int = Integer.valueOf(amount.getText().toString());
+                }
+                else if (amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
+                {
+                    rate_int = Integer.valueOf(rates.getText().toString());
+                }
 
+
+                Log.d("check_amount", String.valueOf(amount_int));
+                Log.d("check_rate",String.valueOf(rate_int));
 
                 if (latitude_check <= Double.valueOf(latitude)+0.1 && latitude_check>=Double.valueOf(latitude)-0.1 ){
                     if (longitude_check <= Double.valueOf(longitude)+0.1 && longitude_check>=Double.valueOf(longitude)-0.1 )
                     {
                         if (amount_int != null && rate_int !=null)
                         {
+                            Log.d("check_in_how","check_in_how");
                             if (amount_check <= amount_int && rate_check <= rate_int)
                             {
                                 if (!uid_check.equals(uid_get))
@@ -598,27 +634,97 @@ public class Exchange_act extends Fragment {
                         }
                         else
                         {
-                            if (!uid_check.equals(uid_get))
+                            if (amount_int !=null && rate_int == null)
                             {
-                                if (status_check.equals("no"))
+                                if (amount_check <= amount_int)
                                 {
-                                    holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                    holder.itemView.setVisibility(View.VISIBLE);
-                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+                                    if (!uid_check.equals(uid_get))
+                                    {
+                                        if (status_check.equals("no"))
+                                        {
+                                            holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
+                                            holder.itemView.setVisibility(View.VISIBLE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                        }
+                                        else if (status_check.equals("yes"))
+                                        {
+                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        holder.itemView.setVisibility(View.GONE);
+                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                    }
                                 }
-                                else if (status_check.equals("yes"))
+                                else
                                 {
                                     holder.itemView.setVisibility(View.GONE);
                                     holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
                                 }
-
                             }
-                            else
+                            else if (rate_int != null && amount_int == null)
                             {
-                                holder.itemView.setVisibility(View.GONE);
-                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                if (rate_check <= rate_int)
+                                {
+                                    if (!uid_check.equals(uid_get))
+                                    {
+                                        if (status_check.equals("no"))
+                                        {
+                                            holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
+                                            holder.itemView.setVisibility(View.VISIBLE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                        }
+                                        else if (status_check.equals("yes"))
+                                        {
+                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        holder.itemView.setVisibility(View.GONE);
+                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                    }
+                                }
+                                else
+                                {
+                                    holder.itemView.setVisibility(View.GONE);
+                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                }
                             }
+                            else if (amount_int == null && rate_int == null)
+                            {
+                                Log.d("check_in_how_1","check_in_how");
+                                if (!uid_check.equals(uid_get))
+                                {
+                                    if (status_check.equals("no"))
+                                    {
+                                        holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
+                                        holder.itemView.setVisibility(View.VISIBLE);
+                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                    }
+                                    else if (status_check.equals("yes"))
+                                    {
+                                        holder.itemView.setVisibility(View.GONE);
+                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                    }
+
+                                }
+                                else
+                                {
+                                    holder.itemView.setVisibility(View.GONE);
+                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                }
+                            }
+
                         }
 
 

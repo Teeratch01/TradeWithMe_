@@ -1,5 +1,6 @@
 package com.example.TradewithMe
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,7 +8,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.facebook.*
-import com.facebook.login.LoginFragment
+import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -15,7 +16,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.FirebaseError
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
@@ -23,7 +23,6 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import com.google.firebase.iid.FirebaseInstanceId
 import java.util.*
-import kotlin.collections.HashMap
 
 
 // https://www.youtube.com/watch?v=S-Mr-CcdU08&t=159s for Facebook authen
@@ -44,6 +43,7 @@ class Login : AppCompatActivity() {
     lateinit var signup_btn: TextView
     private var user_info:User?= null
     private var user_faccebook: User? =null
+    private lateinit var user_ref : DatabaseReference
 
 
     //Google login Variable
@@ -63,6 +63,8 @@ class Login : AppCompatActivity() {
         this.editTextTextEmailAddress = findViewById(R.id.editTextTextEmailAddress)
         this.editTextTextPassword = findViewById(R.id.editTextTextPassword)
         this.button2 = findViewById(R.id.button2)
+        user_ref = FirebaseDatabase.getInstance().getReference("Users")
+        var loadingDialog = loadin_dialog(this@Login)
 
         signup_btn = findViewById(R.id.signup_btn)
         signup_btn.setOnClickListener(View.OnClickListener {
@@ -72,7 +74,7 @@ class Login : AppCompatActivity() {
 
         val forgotPassword_btn :TextView = findViewById(R.id.forgot_password)
        forgotPassword_btn.setOnClickListener(View.OnClickListener {
-           val goto_forgotpassword = Intent(this,ForgotPassword::class.java)
+           val goto_forgotpassword = Intent(this, ForgotPassword::class.java)
            startActivity(goto_forgotpassword)
        })
 
@@ -98,12 +100,70 @@ class Login : AppCompatActivity() {
                                 Toast.makeText(this@Login, "Log In Error, Please try Again", Toast.LENGTH_SHORT).show()
                             } else {
                                 val userID = mFirebaseAuth!!.currentUser?.uid
-                                val map = hashMapOf<String,String>()
+
+
+//
+//                                user_ref.addValueEventListener(object : ValueEventListener {
+//                                    override fun onDataChange(snapshot: DataSnapshot) {
+//                                        if (!snapshot.child(userID.toString()).hasChild("verification")) {
+//                                            val alert = AlertDialog.Builder(this@Login)
+//                                            alert.setCancelable(true)
+//                                            alert.setTitle("Notification")
+//                                            alert.setMessage("Please verify your Identity before direct to use the application")
+//                                            alert.setNegativeButton("Continue")
+//                                            { dialog, which ->
+//                                                dialog.cancel()
+//                                                val intent = Intent(this@Login, Identify_verification_id::class.java)
+//                                                startActivity(intent)
+//                                            }
+//
+//                                            alert.show()
+//                                        } else if (snapshot.child(userID.toString()).hasChild("verification")) {
+//                                            if (snapshot.child(userID.toString()).child("verification").value!!.equals("")) {
+//                                                val alert = AlertDialog.Builder(this@Login)
+//                                                alert.setCancelable(true)
+//                                                alert.setTitle("Notification")
+//                                                alert.setMessage("Please wait for our staff to contact you via email, when the verification was done")
+//                                                alert.setNegativeButton("Dismiss")
+//                                                { dialog, which ->
+//                                                    FirebaseAuth.getInstance().signOut()
+//                                                    LoginManager.getInstance().logOut()
+//                                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+//                                                    val googleSignInClient = GoogleSignIn.getClient(applicationContext, gso)
+//                                                    googleSignInClient.signOut()
+//
+//                                                    dialog.cancel()
+//
+//                                                }
+//
+//                                                alert.show()
+//                                            } else if (snapshot.child(userID.toString()).child("verification").value!!.equals("yes")) {
+//                                                Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
+//                                                val map = hashMapOf<String, String>()
+//                                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+//                                                map.put("token", deviceToken.toString())
+//                                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+//                                                val intToDashboard = Intent(this@Login, Navigation::class.java)
+//                                                startActivity(intToDashboard)
+////                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_google)
+//                                                val intent = Intent(this@Login, Navigation::class.java)
+//                                                startActivity(intent)
+//                                            }
+//                                        }
+//                                    }
+//
+//                                    override fun onCancelled(error: DatabaseError) {
+//                                        TODO("Not yet implemented")
+//                                    }
+//
+//                                })
+
+                                val map = hashMapOf<String, String>()
                                 val deviceToken = FirebaseInstanceId.getInstance().getToken()
                                 map.put("token", deviceToken.toString())
                                 FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
-                                val intToDashboard = Intent(this@Login, Navigation::class.java)
-                                startActivity(intToDashboard)
+//                                val intToDashboard = Intent(this@Login, Navigation::class.java)
+//                                startActivity(intToDashboard)
 
                             }
                         }
@@ -125,6 +185,7 @@ class Login : AppCompatActivity() {
         Log.d("check", signInAccount.toString())
         if (signInAccount != null) {
 
+
 //            val firstname = signInAccount.givenName
 //            val lastname = signInAccount.familyName
 //            val email = signInAccount.ema
@@ -133,47 +194,60 @@ class Login : AppCompatActivity() {
 //                    firstname, lastname, email
 //            )
 
-            startActivity(Intent(this, Navigation::class.java))
+//            startActivity(Intent(this, Navigation::class.java))
 
         }
 
         signin!!.setOnClickListener(View.OnClickListener {
             val sign = signInClient!!.getSignInIntent()
             startActivityForResult(sign, GOOGLE_SIGN_IN_CODE)
+//            var loadingDialog = loadin_dialog(this@Login)
+//            loadingDialog.startDialog()
 //            val user_id= mFirebaseAuth?.currentUser?.uid
 //            FirebaseDatabase.getInstance().getReference("Users").child(user_id.toString()).setValue(user_google)
         })
 
         this.mAuthStateListener = AuthStateListener {
+
             val mFirebaseUser = mFirebaseAuth?.currentUser
+            val uid = mFirebaseUser?.uid
             if (mFirebaseUser != null) {
                 val user_id = mFirebaseUser.uid
-                Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
+                loadingDialog.startDialog()
                 if (user_info!=null)
                 {
                     FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
-                            if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString()))
-                            {
+                            if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString())) {
+                                Log.d("checck_In", "check_in")
                                 FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_info)
-
-                            }
-                            val userID = mFirebaseAuth!!.currentUser?.uid
-                            val map = hashMapOf<String,String>()
-                            val deviceToken = FirebaseInstanceId.getInstance().getToken()
-                            map.put("token", deviceToken.toString())
-                            if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
-                            {
-                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
-                            }
-                            else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
-                            {
-                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!)
-                                {
+                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                val map = hashMapOf<String, String>()
+                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                map.put("token", deviceToken.toString())
+                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
                                     FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                } else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
+                                    if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!) {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                    }
+                                }
+                            } else if (snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString())) {
+                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                val map = hashMapOf<String, String>()
+                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                map.put("token", deviceToken.toString())
+                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
+                                    FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                } else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
+                                    if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!) {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                    }
                                 }
                             }
+
                         }
+
                         override fun onCancelled(error: DatabaseError) {
                             TODO("Not yet implemented")
                         }
@@ -182,11 +256,71 @@ class Login : AppCompatActivity() {
 
 
                 }
-//                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_google)
-                val intent = Intent(this@Login, Navigation::class.java)
-                startActivity(intent)
+
+                user_ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (!snapshot.child(user_id).hasChild("verification")) {
+                            loadingDialog.dismissdialog()
+                            val alert = AlertDialog.Builder(this@Login)
+                            alert.setCancelable(true)
+                            alert.setTitle("Notification")
+                            alert.setMessage("Please verify your Identity before direct to use the application")
+                            alert.setNegativeButton("Continue")
+                            { dialog, which ->
+                                dialog.cancel()
+                                val intent = Intent(this@Login, Identify_verification_id::class.java)
+                                startActivity(intent)
+                            }
+
+                            alert.show()
+                        } else if (snapshot.child(user_id).hasChild("verification")) {
+                            if (snapshot.child(user_id).child("verification").value!!.equals("")) {
+                                val alert = AlertDialog.Builder(this@Login)
+                                loadingDialog.dismissdialog()
+                                alert.setCancelable(true)
+                                alert.setTitle("Notification")
+                                alert.setMessage("Please wait for our staff to contact you via email, when the verification was done")
+                                alert.setNegativeButton("Dismiss")
+                                { dialog, which ->
+                                    FirebaseAuth.getInstance().signOut()
+                                    LoginManager.getInstance().logOut()
+                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                                    val googleSignInClient = GoogleSignIn.getClient(applicationContext, gso)
+                                    googleSignInClient.signOut()
+                                    dialog.cancel()
+                                }
+                                alert.show()
+                            } else if (snapshot.child(user_id).child("verification").value!!.equals("yes")) {
+                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                val map = hashMapOf<String, String>()
+                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                map.put("token", deviceToken.toString())
+                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>).addOnSuccessListener {
+
+                                    loadingDialog.dismissdialog()
+                                    Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this@Login, Navigation::class.java)
+                                    startActivity(intent)
+                                }
+
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+
+                })
+
+
+
+//                Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
+////                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_google)
+//                val intent = Intent(this@Login, Navigation::class.java)
+//                startActivity(intent)
             } else {
-                Toast.makeText(this@Login, "Please Login", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this@Login, "Please Login", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -201,6 +335,9 @@ class Login : AppCompatActivity() {
             override fun onSuccess(loginResult: LoginResult) {
                 handleFacebookAccessToken(loginResult.accessToken)
                 loadUserProfile(loginResult.accessToken)
+//                var loadingDialog = loadin_dialog(this@Login)
+//                loadingDialog.startDialog()
+
             }
 
             override fun onCancel() {
@@ -230,30 +367,40 @@ class Login : AppCompatActivity() {
                     val email: String? = signInAccount.email
                     val phone_number:String = "The user have to edit first"
                     user_info = User(
-                            firstname, lastname, email,phone_number
+                            firstname, lastname, email, phone_number
                     )
                     Log.d("userinfo", user_info.toString())
 
+                    val mFirebaseUser = mFirebaseAuth?.currentUser
+                    val user_id = mFirebaseUser?.uid
+
                     FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
-                            if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString()))
-                            {
-                                FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().currentUser?.uid.toString()).setValue(user_info)
-
-                            }
-                            val userID = mFirebaseAuth!!.currentUser?.uid
-                            val map = hashMapOf<String,String>()
-                            val deviceToken = FirebaseInstanceId.getInstance().getToken()
-                            map.put("token", deviceToken.toString())
-                            if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
-                            {
-                                FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
-                            }
-                            else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token"))
-                            {
-                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!)
-                                {
+                            if (!snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString())) {
+                                Log.d("checck_In", "check_in")
+                                FirebaseDatabase.getInstance().getReference("Users").child(user_id.toString()).setValue(user_info)
+                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                val map = hashMapOf<String, String>()
+                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                map.put("token", deviceToken.toString())
+                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
                                     FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                } else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
+                                    if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!) {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                    }
+                                }
+                            } else if (snapshot.hasChild(FirebaseAuth.getInstance().currentUser?.uid.toString())) {
+                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                val map = hashMapOf<String, String>()
+                                val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                map.put("token", deviceToken.toString())
+                                if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
+                                    FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                } else if (snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).hasChild("token")) {
+                                    if (!snapshot.child(FirebaseAuth.getInstance().currentUser?.uid.toString()).child("token").value?.equals(deviceToken)!!) {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>)
+                                    }
                                 }
                             }
                         }
@@ -266,8 +413,52 @@ class Login : AppCompatActivity() {
                     })
 
 
-                    Toast.makeText(applicationContext, "Your Google Account is Connected to our Application", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(applicationContext, Navigation::class.java))
+//                    user_ref.addValueEventListener(object : ValueEventListener {
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            if (!snapshot.child(user_id.toString()).hasChild("verification")) {
+//                                val alert = AlertDialog.Builder(this@Login)
+//                                alert.setCancelable(true)
+//                                alert.setTitle("Notification")
+//                                alert.setMessage("Please verify your Identity before direct to use the application")
+//                                alert.setNegativeButton("Continue")
+//                                { dialog, which ->
+//                                    dialog.cancel()
+//                                    val intent = Intent(this@Login, Identify_verification_id::class.java)
+//                                    startActivity(intent)
+//                                }
+//
+//                                alert.show()
+//                            } else if (snapshot.child(user_id.toString()).hasChild("verification")) {
+//                                if (snapshot.child(user_id.toString()).child("verification").value!!.equals("")) {
+//                                    val alert = AlertDialog.Builder(this@Login)
+//                                    alert.setCancelable(true)
+//                                    alert.setTitle("Notification")
+//                                    alert.setMessage("Please wait for our staff to contact you via email, when the verification was done")
+//                                    alert.setNegativeButton("Dismiss")
+//                                    { dialog, which ->
+//                                        FirebaseAuth.getInstance().signOut()
+//                                        LoginManager.getInstance().logOut()
+//                                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+//                                        val googleSignInClient = GoogleSignIn.getClient(applicationContext, gso)
+//                                        googleSignInClient.signOut()
+//                                        dialog.cancel()
+//                                    }
+//
+//                                    alert.show()
+//                                } else if (snapshot.child(user_id.toString()).child("verification").value!!.equals("yes")) {
+//                                    Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
+////                FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_google)
+//                                    val intent = Intent(this@Login, Navigation::class.java)
+//                                    startActivity(intent)
+//                                }
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {
+//                            TODO("Not yet implemented")
+//                        }
+//
+//                    })
                 }.addOnFailureListener { }
             } catch (e: ApiException) {
                 e.printStackTrace()
@@ -285,7 +476,7 @@ class Login : AppCompatActivity() {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
                     //                            FirebaseUser user = auth.getCurrentUser();
-                    openProfile()
+//                    openProfile()
 //                    loadUserProfile(token)
                 } else {
                     // If sign in fails, display a message to the user.
@@ -299,6 +490,7 @@ class Login : AppCompatActivity() {
     }
 
     private fun openProfile() {
+        Log.d("check_login", FirebaseAuth.getInstance().currentUser?.uid.toString())
         startActivity(Intent(this, Navigation::class.java))
         finish()
     }
@@ -313,35 +505,12 @@ class Login : AppCompatActivity() {
             val lastname = name.split(" ")[1]
             val email: String = `object`.getString("email")
             val uid = `object`.getString("id")
-            val phone_number : String = "The user have to edit first"
+            val phone_number: String = "The user have to edit first"
 
 
             user_info = User(
-                    firstname, lastname, email ,phone_number
+                    firstname, lastname, email, phone_number
             )
-
-//            val auth :FirebaseAuth = FirebaseAuth.getInstance()
-//            if (auth.currentUser!=null)
-//            {
-//                val userid = auth.currentUser!!.uid
-//                FirebaseDatabase.getInstance().getReference("Users").child(userid).setValue(user_info)
-//            }
-
-
-//            mAuthStateFacebook = AuthStateListener { firebaseAuth ->
-//                val user = firebaseAuth.currentUser
-//                if (user != null) {
-//                    val user_id = user.uid
-////                    Log.d("user_id",user_id)
-//                    FirebaseDatabase.getInstance().getReference("Users").child(user_id).setValue(user_info)
-//                }
-//            }
-
-//            FirebaseAuth.getInstance().addAuthStateListener(mAuthStateFacebook!!)
-//
-////
-//            FirebaseAuth.getInstance().removeAuthStateListener(mAuthStateFacebook!!)
-
 
         })
 
@@ -360,8 +529,9 @@ class Login : AppCompatActivity() {
         super.onStart()
         mFirebaseAuth?.addAuthStateListener(mAuthStateListener!!)
         if (auth.currentUser != null) {
-            openProfile()
+//            openProfile()
         }
+
 //        FirebaseAuth.getInstance().addAuthStateListener(mAuthStateFacebook!!)
     }
 

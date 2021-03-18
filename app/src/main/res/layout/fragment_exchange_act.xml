@@ -58,7 +58,7 @@
                     android:id="@+id/amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10"
+                    android:ems="8"
                     android:hint="Optional for search"
                     android:textSize="14dp"
                     android:inputType="number" />
@@ -97,7 +97,7 @@
                     android:layout_height="41dp"
                     android:hint="Optional for search"
                     android:textSize="14dp"
-                    android:ems="10"
+                    android:ems="8"
                     android:inputType="number" />
 
             </TableRow>

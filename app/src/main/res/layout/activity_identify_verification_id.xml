@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <!-- Here you put the rest of your current view-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -64,10 +69,12 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/imageView"
+                    android:id="@+id/upload_id"
                     android:layout_width="200dp"
                     android:layout_height="150dp"
                     android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:srcCompat="@drawable/takephoto" />
 
                 <ImageView
@@ -111,10 +118,12 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/imageView4"
+                    android:id="@+id/upload_id_with_user"
                     android:layout_width="200dp"
                     android:layout_height="150dp"
                     android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:srcCompat="@drawable/takephoto" />
 
                 <ImageView
@@ -129,7 +138,7 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/next_id_verification"
             android:layout_marginTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -137,3 +146,4 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-        <activity android:name=".Identify_verification_id"></activity>
+        <activity android:name=".Identity_verification_info"></activity>
+        <activity android:name=".Identify_verification_id" />
         <activity android:name=".Feedback" />
         <activity android:name=".Illustrate_pic" />
         <activity android:name=".Chat_matchActivity" />
