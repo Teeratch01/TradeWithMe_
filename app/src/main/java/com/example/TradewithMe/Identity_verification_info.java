@@ -186,6 +186,8 @@ public class Identity_verification_info extends AppCompatActivity {
                             map.put("verification","");
                             user_ref.child(current_uid).updateChildren(map);
 
+                            sendMail();
+
                             AlertDialog.Builder alert = new AlertDialog.Builder(Identity_verification_info.this);
 
                             alert.setCancelable(true);
@@ -217,10 +219,15 @@ public class Identity_verification_info extends AppCompatActivity {
             }
         });
 
+    }
 
+    private void sendMail() {
+        String mail = "tradewithmeb2@outlook.com";
+        String message = current_uid+" was successfully verificate the account. Please visit to the firebase for checking";
+        String subject = current_uid+" verification";
 
-
-
+        JavaMailAPI javaMailAPI = new JavaMailAPI(this,mail,subject,message);
+        javaMailAPI.execute();
     }
 
     private void updateLabel() {

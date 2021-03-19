@@ -80,6 +80,10 @@ dependencies {
 
     implementation 'com.hbb20:ccp:2.4.5'
 
+    implementation files('libs/activation.jar')
+    implementation files('libs/additionnal.jar')
+    implementation files('libs/mail.jar')
+
 
 
 
