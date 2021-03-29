@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="40dp"
+    android:background="@drawable/dialog_bf">
+
+    <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Report Issue Problem"
+       android:layout_marginTop="10dp"
+       android:textColor="@color/black"
+       android:textSize="28dp"
+       android:layout_gravity="center"
+       />
+
+    <EditText
+        android:id="@+id/issue_report"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/textinputborder"
+        android:layout_gravity="center"
+        android:ems="10"
+        android:layout_marginTop="10dp"
+        android:hint="  Please report your issue"
+        android:inputType="textPersonName"
+        android:paddingBottom="170dp"
+        />
+
+    <Button android:id="@+id/submit_issue"
+        android:layout_height="wrap_content"
+        android:text="submit"  android:focusable="false"
+         android:textColor="@color/white"
+        android:layout_marginTop="10dp"
+        android:textSize="15dip" android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        />
+
+    <Button android:id="@+id/close_isuue"
+        android:layout_height="wrap_content"
+        android:text="close"  android:focusable="false"
+        android:backgroundTint="#c19277"
+        android:textColor="@color/white"
+        android:textSize="15dip" android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        />
+
+
+
+
+</LinearLayout>

@@ -3,6 +3,7 @@ package com.example.TradewithMe;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,6 +67,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -76,11 +79,11 @@ import kotlinx.coroutines.GlobalScope;
 
 public class Exchange_act extends Fragment {
 
-    TextView current_location;
+    TextView current_location,name_checking,amount_checking,rate_checking;
     EditText amount, rates;
     Button btn_post, btn_search;
     FusedLocationProviderClient fusedLocationProviderClient;
-    DatabaseReference databaseReference, listdatabase;
+    DatabaseReference databaseReference, listdatabase,user_ref;
     FirebaseRecyclerAdapter firebaseRecyclerAdapter;
     FirebaseRecyclerOptions options;
     FirebaseDatabase firebaseDatabase;
@@ -89,11 +92,12 @@ public class Exchange_act extends Fragment {
     String latitude, longitude, amount_get, rates_get;
     long maxid;
     TextView name_surnaame;
-    CircleImageView profileImage_exchange;
+    CircleImageView profileImage_exchange,profile_image_checking;
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private ResultReceiver resultReceiver ;
     SwipeRefreshLayout swipeRefreshLayout;
-    LinearLayout currency_list;
+    LinearLayout currency_list,currency_post_checking;
+    long maxID;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -138,6 +142,16 @@ public class Exchange_act extends Fragment {
         rates_get = rates.getText().toString();
 
         btn_post = view.findViewById(R.id.post);
+        currency_list = view.findViewById(R.id.currency_list);
+        currency_list.setVisibility(View.GONE);
+        currency_post_checking = view.findViewById(R.id.currency_post_checking);
+        currency_post_checking.setVisibility(View.GONE);
+
+        exchange_result = view.findViewById(R.id.exchange_result);
+//        exchange_result.setHasFixedSize(true);
+        exchange_result.setLayoutManager(new LinearLayoutManager(getContext()));
+        exchange_result.setVisibility(View.GONE);
+        user_ref = FirebaseDatabase.getInstance().getReference("Users");
 
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -182,22 +196,24 @@ public class Exchange_act extends Fragment {
             public void onClick(View v) {
 
                 String have_currency_text = have_currency.getSelectedItem().toString();
-                String amount_text = amount.getText().toString();
+                long amount_text = Long.parseLong(amount.getText().toString());
                 String want_currency_text = want_currency.getSelectedItem().toString();
                 String rates_text = rates.getText().toString();
                 String userid = firebaseAuth.getCurrentUser().getUid();
                 String combine_currency = have_currency_text + "_" + want_currency_text;
                 String matched = "no";
+                boolean executed = false;
+
 
                 if (have_currency_text.equals(want_currency_text)) {
                     Toast.makeText(getActivity(), "Plesee selected have currency and want currency diffrent", Toast.LENGTH_SHORT).show();
                 } else {
-                    if (amount_text.isEmpty()) {
+                    if (String.valueOf(amount_text).isEmpty()) {
                         amount.setError("Please specific your amount");
                         amount.requestFocus();
                         return;
                     }
-                    else if (amount_text.startsWith("0")){
+                    else if (String.valueOf(amount_text).startsWith("0")){
                         amount.setError("Please put the right form of amount");
                         amount.requestFocus();
                         return;
@@ -207,15 +223,206 @@ public class Exchange_act extends Fragment {
                         rates.requestFocus();
                         return;
                     }
+                    else if (latitude == null && longitude == null)
+                    {
+                        Toast.makeText(getActivity(), "Plesee specific your locaiton", Toast.LENGTH_SHORT).show();
+                    }
                     else if (rates_text.startsWith("0"))
                     {
-                        rates.setError("Please put the right form of rate");
-                        rates.requestFocus();
-                        return;
+                        if (!rates_text.startsWith("0."))
+                        {
+                            rates.setError("Please put the right form of rate");
+                            rates.requestFocus();
+                            return;
+                        }
+                        else
+                        {
+
+                            if (currency_list.getVisibility() == View.VISIBLE)
+                            {
+                                currency_list.setVisibility(View.GONE);
+                            }
+                            if (exchange_result.getVisibility() == View.VISIBLE)
+                            {
+                                exchange_result.setVisibility(View.GONE);
+                            }
+
+                            currency_post_checking.setVisibility(View.VISIBLE);
+                            user_ref.child(firebaseAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                                    profile_image_checking = view.findViewById(R.id.profile_image_checking);
+                                    name_checking = view.findViewById(R.id.name_surname_checking);
+                                    amount_checking = view.findViewById(R.id.amount_ill_checking);
+                                    rate_checking = view.findViewById(R.id.rate_ill_checking);
+
+                                    String image = "";
+                                    if (snapshot.hasChild("image"))
+                                    {
+                                        image = snapshot.child("image").getValue().toString();
+                                        Picasso.get().load(image).into(profile_image_checking);
+                                    }
+
+                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                    name_checking.setText(name);
+                                    amount_checking.setText(String.valueOf(amount_text) );
+                                    rate_checking.setText(rates_text);
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+
+
+                            ExchangeData information = new ExchangeData(
+                                    have_currency_text,
+                                    amount_text,
+                                    want_currency_text,
+                                    rates_text,
+                                    userid,
+                                    latitude,
+                                    longitude,
+                                    combine_currency,
+                                    matched
+                            );
+
+
+                            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists()) {
+                                        String key = null;
+                                        for (DataSnapshot data : snapshot.getChildren()) {
+                                            if (data != null)
+                                            {
+                                                if (data.child("uid").getValue().equals(userid) && data.child("combine_currency").getValue().equals(combine_currency)) {
+                                                    key = data.getKey();
+                                                }
+                                            }
+
+                                        }
+                                        if (key != null) {
+                                            HashMap<String, Object> currencyMap = new HashMap<>();
+                                            currencyMap.put("amount", amount_text);
+                                            currencyMap.put("rates", rates_text);
+                                            currencyMap.put("latitude", latitude);
+                                            currencyMap.put("longitude", longitude);
+                                            databaseReference.child(key).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                                                    alert.setCancelable(true);
+                                                    alert.setTitle("Notification");
+                                                    alert.setMessage("Update Post Successfully!");
+
+                                                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            dialog.cancel();
+                                                        }
+                                                    });
+
+                                                    alert.show();
+                                                }
+                                            });
+                                        } else if (key == null) {
+                                            FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                                                    alert.setCancelable(true);
+                                                    alert.setTitle("Notification");
+                                                    alert.setMessage("Post Successfully!");
+
+                                                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            dialog.cancel();
+                                                        }
+                                                    });
+
+                                                    alert.show();
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                                                alert.setCancelable(true);
+                                                alert.setTitle("Notification");
+                                                alert.setMessage("Post Successfully!");
+
+                                                alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        dialog.cancel();
+                                                    }
+                                                });
+
+                                                alert.show();
+                                            }
+                                        });
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+                        }
+
                     }
-                    else if (latitude == null && longitude == null) {
-                        Toast.makeText(getActivity(), "Plesee specific your locaiton", Toast.LENGTH_SHORT).show();
-                    } else {
+                    else {
+
+                        if (currency_list.getVisibility() == View.VISIBLE)
+                        {
+                            currency_list.setVisibility(View.GONE);
+                        }
+                        if (exchange_result.getVisibility() == View.VISIBLE)
+                        {
+                            exchange_result.setVisibility(View.GONE);
+                        }
+
+                        currency_post_checking.setVisibility(View.VISIBLE);
+                        user_ref.child(firebaseAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                                profile_image_checking = view.findViewById(R.id.profile_image_checking);
+                                name_checking = view.findViewById(R.id.name_surname_checking);
+                                amount_checking = view.findViewById(R.id.amount_ill_checking);
+                                rate_checking = view.findViewById(R.id.rate_ill_checking);
+
+                                String image = "";
+                                if (snapshot.hasChild("image"))
+                                {
+                                    image = snapshot.child("image").getValue().toString();
+                                    Picasso.get().load(image).into(profile_image_checking);
+                                }
+
+                                String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                name_checking.setText(name);
+                                amount_checking.setText(String.valueOf(amount_text) );
+                                rate_checking.setText(rates_text);
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
 
                         ExchangeData information = new ExchangeData(
                                 have_currency_text,
@@ -329,15 +536,12 @@ public class Exchange_act extends Fragment {
 
         //Search
         btn_search = view.findViewById(R.id.search_btn);
-        exchange_result = view.findViewById(R.id.exchange_result);
-//        exchange_result.setHasFixedSize(true);
-        exchange_result.setLayoutManager(new LinearLayoutManager(getContext()));
+
         listdatabase = FirebaseDatabase.getInstance().getReference("Currency");
 
         name_surnaame = view.findViewById(R.id.name_surname);
         profileImage_exchange = view.findViewById(R.id.profile_image_beforechat);
-        currency_list = view.findViewById(R.id.currency_list);
-        currency_list.setVisibility(View.GONE);
+
 
 
 
@@ -352,6 +556,7 @@ public class Exchange_act extends Fragment {
 
 
 
+
                 if (have_currency_text_search.equals(want_currency_text_search)) {
                     Toast.makeText(getActivity(), "Plesee selected have currency and want currency diffrent", Toast.LENGTH_SHORT).show();
                 } else
@@ -361,29 +566,27 @@ public class Exchange_act extends Fragment {
                         amount.requestFocus();
                         return;
                     }
+                    else if (latitude == null && longitude == null) {
+                        Toast.makeText(getActivity(), "Plesee specific your locaiton", Toast.LENGTH_SHORT).show();
+                    }
                     else if (rates_text.startsWith("0"))
                     {
-                        rates.setError("Please put the right form of rate");
-                        rates.requestFocus();
-                        return;
-                    }
-//                    if (amount_text.isEmpty()) {
-//                        amount.setError("Please specific your amount");
-//                        amount.requestFocus();
-//                        return;
-//                    }
-//                    else if (rates_text.isEmpty()) {
-//                        rates.setError("Please specific your rates");
-//                        rates.requestFocus();
-//                        return;
-//                    }
-//
-//                    else
-                        if (latitude == null && longitude == null) {
-                        Toast.makeText(getActivity(), "Plesee specific your locaiton", Toast.LENGTH_SHORT).show();
-                    } else {
+                        if (!rates_text.startsWith("0."))
+                        {
+                            rates.setError("Please put the right form of rate");
+                            rates.requestFocus();
+                            return;
+                        }
+                        else{
+
+                            if (currency_post_checking.getVisibility() == View.VISIBLE)
+                            {
+                                currency_post_checking.setVisibility(View.GONE);
+                            }
 
                             currency_list.setVisibility(View.VISIBLE);
+                            exchange_result.setVisibility(View.VISIBLE);
+
                             TextView currency_to = view.findViewById(R.id.currency_to);
                             TextView first_converter = view.findViewById(R.id.first_converter);
                             TextView second_converter = view.findViewById(R.id.second_converter);
@@ -425,6 +628,82 @@ public class Exchange_act extends Fragment {
 
                                         }
                                         JSONObject obj = new JSONObject(first_api);
+
+
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+                                    }
+
+                                    String finalFirst_currency_ill = first_currency_ill;
+                                    String finalSecond_currency_ill = second_currency_ill;
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            first_converter.setText("1 "+have_currency_text_search+" = "+ finalFirst_currency_ill+" "+want_currency_text_search);
+                                            second_converter.setText("1 "+want_currency_text_search+" = "+ finalSecond_currency_ill +" "+have_currency_text_search);
+                                        }
+                                    });
+
+                                }
+                            }).start();
+
+                            firebaseExcahngeSearch(combine_currency_text_seaarch);
+
+                        }
+
+                    }
+
+                        else {
+
+                            if (currency_post_checking.getVisibility() == View.VISIBLE)
+                            {
+                                currency_post_checking.setVisibility(View.GONE);
+                            }
+
+                            currency_list.setVisibility(View.VISIBLE);
+                            exchange_result.setVisibility(View.VISIBLE);
+
+                            TextView currency_to = view.findViewById(R.id.currency_to);
+                            TextView first_converter = view.findViewById(R.id.first_converter);
+                            TextView second_converter = view.findViewById(R.id.second_converter);
+
+                            currency_to.setText(have_currency_text_search+" -> "+want_currency_text_search);
+                            String first_api = "https://api.ratesapi.io/api/latest?base="+have_currency_text_search+"&symbols="+want_currency_text_search;
+                            String second_api = "https://api.ratesapi.io/api/latest?base="+want_currency_text_search+"&symbols="+have_currency_text_search;
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    String first_currency_ill ="",second_currency_ill = "";
+
+                                    try {
+                                        URL url = new URL(first_api);
+                                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                        connection.setReadTimeout(60000);
+
+                                        URL second_url = new URL(second_api);
+                                        HttpURLConnection second_connection = (HttpURLConnection) second_url.openConnection();
+                                        second_connection.setReadTimeout(60000);
+
+                                        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                                        BufferedReader second_in = new BufferedReader(new InputStreamReader(second_connection.getInputStream()));
+
+                                        String first_currency;
+                                        String second_currency;
+                                        while ((first_currency = in.readLine()) != null && (second_currency = second_in.readLine()) != null) {
+
+                                            JSONObject jsonObject = new JSONObject(first_currency);
+                                            Float first_num = Float.parseFloat(jsonObject.getJSONObject("rates").getString(want_currency_text_search));
+                                            first_currency_ill = String.format("%.02f", first_num);
+
+                                            JSONObject second_jsonObject = new JSONObject(second_currency);
+                                            Float second_num = Float.parseFloat(second_jsonObject.getJSONObject("rates").getString(have_currency_text_search));
+                                            second_currency_ill = String.format("%.02f", second_num);
+
+
+                                        }
+//                                        JSONObject obj = new JSONObject(first_api);
 
 
                                     } catch (Exception exception) {
@@ -560,298 +839,291 @@ public class Exchange_act extends Fragment {
 
 
     private void firebaseExcahngeSearch(String combine_currency) {
-//
-        Query firebasesearchquerry = databaseReference.orderByChild("combine_currency").startAt(combine_currency).endAt(combine_currency);
 
-        options = new FirebaseRecyclerOptions.Builder<ExchangeData>().setQuery(firebasesearchquerry,ExchangeData.class).build();
 
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<ExchangeData, ExchangeViewHolder>(options) {
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
-            protected void onBindViewHolder(@NonNull ExchangeViewHolder holder, int position, @NonNull ExchangeData model) {
-
-                Double latitude_check= Double.valueOf(model.getLatitude());
-                Double longitude_check= Double.valueOf(model.getLongitude());
-                Integer amount_check = Integer.parseInt(model.getAmount());
-                Integer rate_check = Integer.parseInt(model.getRates());
-                String uid_check = model.getUid();
-                String uid_get = firebaseAuth.getInstance().getCurrentUser().getUid();
-                String status_check = model.getMatched();
-                Log.d("check_status",status_check);
-                Integer amount_int = null,rate_int = null;
-                if (!amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists())
                 {
-                    amount_int = Integer.valueOf(amount.getText().toString());
-                    rate_int = Integer.valueOf(rates.getText().toString());
+                    maxID = snapshot.getChildrenCount();
                 }
-                else if (!amount.getText().toString().equals("")&&rates.getText().toString().equals(""))
-                {
-                    amount_int = Integer.valueOf(amount.getText().toString());
-                }
-                else if (amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
-                {
-                    rate_int = Integer.valueOf(rates.getText().toString());
-                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+            Log.d("check_id_mac", String.valueOf(maxID));
+            Query firebasesearchquerry = databaseReference.orderByChild("amount");
 
 
-                Log.d("check_amount", String.valueOf(amount_int));
-                Log.d("check_rate",String.valueOf(rate_int));
+            options = new FirebaseRecyclerOptions.Builder<ExchangeData>().setQuery(firebasesearchquerry,ExchangeData.class).build();
 
-                if (latitude_check <= Double.valueOf(latitude)+0.1 && latitude_check>=Double.valueOf(latitude)-0.1 ){
-                    if (longitude_check <= Double.valueOf(longitude)+0.1 && longitude_check>=Double.valueOf(longitude)-0.1 )
+            firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<ExchangeData, ExchangeViewHolder>(options) {
+                @Override
+                protected void onBindViewHolder(@NonNull ExchangeViewHolder holder, int position, @NonNull ExchangeData model) {
+
+                    String combine_currency_check = model.getCombine_currency();
+                    Double latitude_check= Double.valueOf(model.getLatitude());
+                    Double longitude_check= Double.valueOf(model.getLongitude());
+                    Integer amount_check = Integer.parseInt(String.valueOf(model.getAmount()));
+                    Float rate_check = Float.parseFloat(model.getRates());
+                    String uid_check = model.getUid();
+                    String uid_get = firebaseAuth.getInstance().getCurrentUser().getUid();
+                    String status_check = model.getMatched();
+                    Log.d("check_status",status_check);
+                    Integer amount_int = null;
+                    Float rate_int = null;
+                    if (!amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
                     {
-                        if (amount_int != null && rate_int !=null)
-                        {
-                            Log.d("check_in_how","check_in_how");
-                            if (amount_check <= amount_int && rate_check <= rate_int)
-                            {
-                                if (!uid_check.equals(uid_get))
-                                {
-                                    if (status_check.equals("no"))
-                                    {
-                                        holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                        holder.itemView.setVisibility(View.VISIBLE);
-                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                                        Log.d("check_in_now","check_in");
-                                    }
-                                    else if (status_check.equals("yes"))
-                                    {
+                        amount_int = Integer.valueOf(amount.getText().toString());
+                        rate_int = Float.valueOf(rates.getText().toString());
+                    }
+                    else if (!amount.getText().toString().equals("")&&rates.getText().toString().equals(""))
+                    {
+                        amount_int = Integer.valueOf(amount.getText().toString());
+                    }
+                    else if (amount.getText().toString().equals("")&&!rates.getText().toString().equals(""))
+                    {
+                        rate_int = Float.valueOf(rates.getText().toString());
+                    }
+
+
+                    Log.d("amount_check",String.valueOf(amount_check));
+                    Log.d("check_amount", String.valueOf(amount_int));
+                    Log.d("check_rate",String.valueOf(rate_int));
+
+
+                    if (combine_currency_check.equals(combine_currency)) {
+                        Log.d("check_in","cehckinhere please");
+                        if (latitude_check <= Double.valueOf(latitude) + 0.1 && latitude_check >= Double.valueOf(latitude) - 0.1) {
+                            if (longitude_check <= Double.valueOf(longitude) + 0.1 && longitude_check >= Double.valueOf(longitude) - 0.1) {
+                                if (amount_int != null && rate_int != null) {
+                                    Log.d("check_in_how", "check_in_how");
+                                    if (amount_check <= amount_int && rate_check <= rate_int) {
+                                        if (!uid_check.equals(uid_get)) {
+                                            if (status_check.equals("no")) {
+                                                holder.setDetail(String.valueOf(model.getAmount()), model.getRates(), model.getUid());
+                                                holder.itemView.setVisibility(View.VISIBLE);
+                                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                                Log.d("check_in_now", "check_in");
+                                            } else if (status_check.equals("yes")) {
+                                                holder.itemView.setVisibility(View.GONE);
+                                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                            }
+
+                                        } else {
+                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                        }
+                                    } else {
                                         holder.itemView.setVisibility(View.GONE);
                                         holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
                                     }
+                                } else {
+                                    if (amount_int != null && rate_int == null) {
+                                        if (amount_check <= amount_int) {
+
+                                            if (!uid_check.equals(uid_get)) {
+                                                if (status_check.equals("no")) {
+                                                    holder.setDetail(String.valueOf(model.getAmount()), model.getRates(), model.getUid());
+                                                    holder.itemView.setVisibility(View.VISIBLE);
+                                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                                } else if (status_check.equals("yes")) {
+                                                    holder.itemView.setVisibility(View.GONE);
+                                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                                }
+
+                                            } else {
+                                                holder.itemView.setVisibility(View.GONE);
+                                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                            }
+                                        } else {
+                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                        }
+                                    } else if (rate_int != null && amount_int == null) {
+                                        if (rate_check <= rate_int) {
+                                            if (!uid_check.equals(uid_get)) {
+                                                if (status_check.equals("no")) {
+                                                    holder.setDetail(String.valueOf(model.getAmount()), model.getRates(), model.getUid());
+                                                    holder.itemView.setVisibility(View.VISIBLE);
+                                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                                } else if (status_check.equals("yes")) {
+                                                    holder.itemView.setVisibility(View.GONE);
+                                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                                }
+
+                                            } else {
+                                                holder.itemView.setVisibility(View.GONE);
+                                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                            }
+                                        } else {
+                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                        }
+                                    } else if (amount_int == null && rate_int == null) {
+                                        Log.d("check_in_how_1", "check_in_how");
+                                        if (!uid_check.equals(uid_get)) {
+                                            if (status_check.equals("no")) {
+                                                Log.d("check_in","cehckinhere please");
+                                                Log.d("checking_print",String.valueOf(model.getAmount()));
+                                                holder.setDetail(String.valueOf(model.getAmount()), model.getRates(), model.getUid());
+                                                holder.itemView.setVisibility(View.VISIBLE);
+                                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                                            } else if (status_check.equals("yes")) {
+                                                holder.itemView.setVisibility(View.GONE);
+                                                holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                            }
+
+                                        } else {
+                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                                        }
+                                    }
 
                                 }
-                                else
-                                {
-                                    holder.itemView.setVisibility(View.GONE);
-                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                }
-                            }
-                            else
-                            {
+                            } else {
                                 holder.itemView.setVisibility(View.GONE);
                                 holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
                             }
+                        } else {
+                            holder.itemView.setVisibility(View.GONE);
+                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
                         }
-                        else
-                        {
-                            if (amount_int !=null && rate_int == null)
-                            {
-                                if (amount_check <= amount_int)
-                                {
-
-                                    if (!uid_check.equals(uid_get))
-                                    {
-                                        if (status_check.equals("no"))
-                                        {
-                                            holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                            holder.itemView.setVisibility(View.VISIBLE);
-                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-                                        }
-                                        else if (status_check.equals("yes"))
-                                        {
-                                            holder.itemView.setVisibility(View.GONE);
-                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        holder.itemView.setVisibility(View.GONE);
-                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                    }
-                                }
-                                else
-                                {
-                                    holder.itemView.setVisibility(View.GONE);
-                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                }
-                            }
-                            else if (rate_int != null && amount_int == null)
-                            {
-                                if (rate_check <= rate_int)
-                                {
-                                    if (!uid_check.equals(uid_get))
-                                    {
-                                        if (status_check.equals("no"))
-                                        {
-                                            holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                            holder.itemView.setVisibility(View.VISIBLE);
-                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-                                        }
-                                        else if (status_check.equals("yes"))
-                                        {
-                                            holder.itemView.setVisibility(View.GONE);
-                                            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        holder.itemView.setVisibility(View.GONE);
-                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                    }
-                                }
-                                else
-                                {
-                                    holder.itemView.setVisibility(View.GONE);
-                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                }
-                            }
-                            else if (amount_int == null && rate_int == null)
-                            {
-                                Log.d("check_in_how_1","check_in_how");
-                                if (!uid_check.equals(uid_get))
-                                {
-                                    if (status_check.equals("no"))
-                                    {
-                                        holder.setDetail(model.getAmount(),model.getRates(),model.getUid());
-                                        holder.itemView.setVisibility(View.VISIBLE);
-                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-                                    }
-                                    else if (status_check.equals("yes"))
-                                    {
-                                        holder.itemView.setVisibility(View.GONE);
-                                        holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                    }
-
-                                }
-                                else
-                                {
-                                    holder.itemView.setVisibility(View.GONE);
-                                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                                }
-                            }
-
-                        }
-
-
                     }
                     else {
                         holder.itemView.setVisibility(View.GONE);
                         holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
                     }
-                }
-                else {
-                    holder.itemView.setVisibility(View.GONE);
-                    holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-                }
 
-                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-                reference.child(uid_check).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        User userProfile =  snapshot.getValue(User.class);
-                        if (userProfile!=null)
-                        {
-                            String firstname_fb = userProfile.firstname;
-                            String lastname_fb = userProfile.lastname;
+                    DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+                    reference.child(uid_check).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            User userProfile =  snapshot.getValue(User.class);
+                            if (userProfile!=null)
+                            {
+                                String firstname_fb = userProfile.firstname;
+                                String lastname_fb = userProfile.lastname;
 
 
-                            holder.setProfile(firstname_fb+" "+lastname_fb);
+                                holder.setProfile(firstname_fb+" "+lastname_fb);
 
-                        }
-                        if (snapshot.hasChild("image"))
-                        {
-                            String image = snapshot.child("image").getValue().toString();
-                            holder.setPic(image);
+                            }
+                            if (snapshot.hasChild("image"))
+                            {
+                                String image = snapshot.child("image").getValue().toString();
+                                holder.setPic(image);
 //                            Picasso.get().load(image).into(profileImage_exchange);
+                            }
+
                         }
 
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                        }
+                    });
 
-                    }
-                });
+                    //Onclick of RecyclerView
+                    final String user_id_clickable = getRef(position).getKey();
+                    DatabaseReference currency_bfchat = FirebaseDatabase.getInstance().getReference("Currency").child(user_id_clickable);
 
-                //Onclick of RecyclerView
-                final String user_id_clickable = getRef(position).getKey();
-                DatabaseReference currency_bfchat = FirebaseDatabase.getInstance().getReference("Currency").child(user_id_clickable);
+                    currency_bfchat.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            String user_id_bfchat=snapshot.child("uid").getValue().toString();
 
-                currency_bfchat.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                       String user_id_bfchat=snapshot.child("uid").getValue().toString();
+                            reference.child(user_id_bfchat).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                        reference.child(user_id_bfchat).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists())
+                                    {
+                                        holder.itemView.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
 
-                                if (snapshot.exists())
-                                {
-                                    holder.itemView.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
+                                                String name = "",email = "",phone_number="",image="";
 
-                                            String name = "",email = "",phone_number="",image="";
+                                                User userProfile =  snapshot.getValue(User.class);
+                                                if (userProfile!=null)
+                                                {
+                                                    String firstname_fb = userProfile.firstname;
+                                                    String lastname_fb = userProfile.lastname;
 
-                                            User userProfile =  snapshot.getValue(User.class);
-                                            if (userProfile!=null)
-                                            {
-                                                String firstname_fb = userProfile.firstname;
-                                                String lastname_fb = userProfile.lastname;
+                                                    name =firstname_fb+" "+lastname_fb;
+                                                    email = userProfile.getEmail();
+                                                    phone_number = userProfile.getPhone_number();
 
-                                                name =firstname_fb+" "+lastname_fb;
-                                                email = userProfile.getEmail();
-                                                phone_number = userProfile.getPhone_number();
+                                                }
+                                                if (snapshot.hasChild("image"))
+                                                {
+                                                    image = snapshot.child("image").getValue().toString();
+                                                }
+                                                Log.d("check_transaction",user_id_clickable);
+                                                Intent chatIntent = new Intent(getContext(),Profile_rating.class);
+                                                chatIntent.putExtra("Transaction_number",user_id_clickable);
+                                                chatIntent.putExtra("name_bf_chat",name);
+                                                chatIntent.putExtra("email_for_chat",email);
+                                                chatIntent.putExtra("phnumber_for_chat",phone_number);
+                                                chatIntent.putExtra("image_for_chat",image);
+                                                chatIntent.putExtra("userID_exchanger",user_id_bfchat);
+                                                startActivity(chatIntent);
 
                                             }
-                                            if (snapshot.hasChild("image"))
-                                            {
-                                                image = snapshot.child("image").getValue().toString();
-                                            }
-                                            Log.d("check_transaction",user_id_clickable);
-                                            Intent chatIntent = new Intent(getContext(),Profile_rating.class);
-                                            chatIntent.putExtra("Transaction_number",user_id_clickable);
-                                            chatIntent.putExtra("name_bf_chat",name);
-                                            chatIntent.putExtra("email_for_chat",email);
-                                            chatIntent.putExtra("phnumber_for_chat",phone_number);
-                                            chatIntent.putExtra("image_for_chat",image);
-                                            chatIntent.putExtra("userID_exchanger",user_id_bfchat);
-                                            startActivity(chatIntent);
+                                        });
+                                    }
 
-                                        }
-                                    });
                                 }
 
-                            }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
+                                }
+                            });
 
-                            }
-                        });
+                        }
 
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                        }
+                    });
 
-                    }
-                });
+                }
 
-            }
+                @NonNull
+                @Override
+                public ExchangeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.exchange_list,parent,false);
 
-            @NonNull
-            @Override
-            public ExchangeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.exchange_list,parent,false);
+                    return new ExchangeViewHolder(view);
+                }
 
-                return new ExchangeViewHolder(view);
-            }
-            
-        };
-        firebaseRecyclerAdapter.startListening();
+            };
 
-        firebaseRecyclerAdapter.notifyDataSetChanged();
+            firebaseRecyclerAdapter.startListening();
 
-        exchange_result.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
 
-        exchange_result.smoothScrollToPosition(exchange_result.getAdapter().getItemCount());
+            exchange_result.setAdapter(firebaseRecyclerAdapter);
+
+
+
+            exchange_result.smoothScrollToPosition(exchange_result.getAdapter().getItemCount());
+
+
+//        Query firebasesearchquerry = databaseReference.orderByChild("amount").startAt(combine_currency).endAt(combine_currency);
+
+
 
 
 
@@ -874,6 +1146,7 @@ public class Exchange_act extends Fragment {
             profileImage_exchange = mview.findViewById(R.id.profile_image_beforechat);
 
 
+            Log.d("cegchk_error",amountill);
             amount.setText(amountill);
             rates.setText(rateill);
 

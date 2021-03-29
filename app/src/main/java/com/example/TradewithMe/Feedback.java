@@ -34,6 +34,8 @@ public class Feedback extends AppCompatActivity {
     private String uid_user;
     private FirebaseRecyclerOptions options;
     private FirebaseRecyclerAdapter adapter;
+    private LinearLayoutManager mLayoutManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +45,11 @@ public class Feedback extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         feedback_recyclerview  = findViewById(R.id.feedback_recyclerview);
-        feedback_recyclerview.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager.setReverseLayout(true);
+        mLayoutManager.setStackFromEnd(true);
+        feedback_recyclerview.setLayoutManager(mLayoutManager);
 
         uid_user = getIntent().getExtras().get("feedback_id").toString();
         databaseReference = FirebaseDatabase.getInstance().getReference("Feedback").child(uid_user);

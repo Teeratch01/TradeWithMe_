@@ -34,6 +34,7 @@ public class Notification extends Fragment {
     private String uid_currrent_user;
     private FirebaseRecyclerOptions Options;
     private FirebaseRecyclerAdapter Adapter;
+    private LinearLayoutManager mLayoutManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,7 +43,10 @@ public class Notification extends Fragment {
         view =inflater.inflate(R.layout.fragment_notification, container, false);
 
         notification_recycler = view.findViewById(R.id.notification_recyclerview);
-        notification_recycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        mLayoutManager = new LinearLayoutManager(getContext());
+        mLayoutManager.setReverseLayout(true);
+        mLayoutManager.setStackFromEnd(true);
+        notification_recycler.setLayoutManager(mLayoutManager);
 
         firebaseAuth = FirebaseAuth.getInstance();
         uid_currrent_user = firebaseAuth.getCurrentUser().getUid();

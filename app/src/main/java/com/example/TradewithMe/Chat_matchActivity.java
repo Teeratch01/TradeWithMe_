@@ -63,6 +63,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -151,22 +152,7 @@ public class Chat_matchActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String messageText = MessageInputText.getText().toString();
                 sendMessage(messageText);
-                FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.hasChild("image"))
-                        {
-                            String image = snapshot.child("image").getValue().toString();
-                            String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
-                            getToken(MessageInputText.getText().toString(),messagesenderID,image,messagereceiverID,name);
-                        }
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
             }
         });
 
@@ -311,7 +297,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                 rankDailog = new Dialog(Chat_matchActivity.this);
                 rankDailog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 rankDailog.setContentView(R.layout.rank_dialog);
-                rankDailog.setCancelable(true);
+                rankDailog.setCancelable(false);
 
                 ratingBar = rankDailog.findViewById(R.id.dialog_ratingbar);
                 ratingBar.setMax(5);
@@ -334,7 +320,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                             {
                                 AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
 
-                                alert.setCancelable(true);
+                                alert.setCancelable(false);
                                 alert.setTitle("Notification");
                                 alert.setMessage("You are not match with the other exchanger yet. Wait for the other exchanger to match with you");
                                 alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
@@ -343,7 +329,10 @@ public class Chat_matchActivity extends AppCompatActivity {
                                         dialog.cancel();
                                     }
                                 });
-                                alert.show();
+                                if (!isFinishing()) {
+                                    // show popup
+                                    alert.show();
+                                }
 
                             }
                             else {
@@ -377,13 +366,37 @@ public class Chat_matchActivity extends AppCompatActivity {
 
                                             FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
-                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                    if (snapshot.hasChild("image"))
-                                                    {
-                                                        String image = snapshot.child("image").getValue().toString();
-                                                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
-                                                        getToken("The transaction is successful,Please rate to the other exchanger",messagesenderID,image,messagereceiverID,name);
-                                                    }
+                                                public void onDataChange(@NonNull DataSnapshot snapshot1) {
+                                                    success_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            if (snapshot.hasChild(messagereceiverID))
+                                                            {
+                                                                if (snapshot.child(messagereceiverID).hasChild(messagesenderID))
+                                                                {
+                                                                    if (snapshot1.hasChild("image"))
+                                                                    {
+                                                                        String image = snapshot1.child("image").getValue().toString();
+                                                                        String name = snapshot1.child("firstname").getValue().toString()+" "+snapshot1.child("lastname").getValue().toString();
+                                                                        getToken("The transaction is successful,Please rate to the other exchanger",messagesenderID,image,messagereceiverID,name);
+                                                                    }
+                                                                    else if (!snapshot1.hasChild("image")){
+                                                                        String image = "";
+                                                                        String name = snapshot1.child("firstname").getValue().toString()+" "+snapshot1.child("lastname").getValue().toString();
+                                                                        Log.d("check_name ",name);
+
+                                                                        getToken("The transaction is successful,Please rate to the other exchanger",messagesenderID,image,messagereceiverID,name);
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                                        }
+                                                    });
+
                                                 }
 
                                                 @Override
@@ -499,7 +512,13 @@ public class Chat_matchActivity extends AppCompatActivity {
                                         }
                                     }
                                 });
-                                rankDailog.show();
+
+                                if (!isFinishing()) {
+                                    // show popup
+                                    rankDailog.show();
+                                }
+
+
 
                             }
                         }
@@ -535,7 +554,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                         rankDailog = new Dialog(Chat_matchActivity.this);
                         rankDailog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         rankDailog.setContentView(R.layout.rank_dialog);
-                        rankDailog.setCancelable(true);
+                        rankDailog.setCancelable(false);
 
                         Log.d("check_exist","check");
                         ratingBar = rankDailog.findViewById(R.id.dialog_ratingbar);
@@ -774,11 +793,50 @@ public class Chat_matchActivity extends AppCompatActivity {
                             }
                         });
 
-                        rankDailog.show();
+                        if (!isFinishing()) {
+                            // show popup
+                            rankDailog.show();
+                        }
+
                     }
 
                 }
             }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        matched_ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.child(messagesenderID).child(messagereceiverID).hasChild("Decline request"))
+                {
+                    AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this,R.style.AlertDialogCustom);
+                    alert.setCancelable(false);
+                    alert.setTitle("Notifications");
+                    alert.setMessage(name_fromchat +" decline your request , Please contact this user again.");
+
+                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(Chat_matchActivity.this,ChatActivity.class);
+                            intent.putExtra("name_chatact",name_fromchat);
+                            intent.putExtra("other_uid_chatact",messagereceiverID);
+                            intent.putExtra("transaction_number_ch",transaction_num);
+                            startActivity(intent);
+                            snapshot.child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                            dialog.cancel();
+                        }
+                    });
+
+                    if (!isFinishing()) {
+                        // show popup
+                        alert.show();
+                    }
+                }
+            }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
@@ -846,6 +904,15 @@ public class Chat_matchActivity extends AppCompatActivity {
                                     if (task.isSuccessful())
                                     {
                                         Toast.makeText(Chat_matchActivity.this,"Message Sent Succesfully ",Toast.LENGTH_SHORT).show();
+
+                                        Calendar calendar = Calendar.getInstance();
+                                        //Returns current time in millis
+                                        long timeMilli = calendar.getTimeInMillis();
+                                        HashMap map = new HashMap();
+                                        map.put("Timestamp",timeMilli);
+                                        contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+                                        contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+
                                         FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -854,6 +921,13 @@ public class Chat_matchActivity extends AppCompatActivity {
                                                     String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
                                                     getToken("Sent Photo",messagesenderID,image,messagereceiverID,name);
                                                 }
+                                                else if (!snapshot.hasChild("image")){
+                                                    String image = "";
+                                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+
+                                                    getToken("Sent Photo",messagesenderID,image,messagereceiverID,name);
+                                                }
+
                                             }
 
                                             @Override
@@ -931,21 +1005,27 @@ public class Chat_matchActivity extends AppCompatActivity {
                         sendMessage(googlemap_link);
 
 
-                        FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                if (snapshot.hasChild("image")){
-                                    String image = snapshot.child("image").getValue().toString();
-                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
-                                    getToken(googlemap_link,messagesenderID,image,messagereceiverID,name);
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
+//                        FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addValueEventListener(new ValueEventListener() {
+//                            @Override
+//                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                                if (snapshot.hasChild("image")){
+//                                    String image = snapshot.child("image").getValue().toString();
+//                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+//                                    getToken(googlemap_link,messagesenderID,image,messagereceiverID,name);
+//                                }
+//                                else if (!snapshot.hasChild("image")){
+//                                    String image = "";
+//                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+//                                    getToken(googlemap_link,messagesenderID,image,messagereceiverID,name);
+//                                }
+//
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(@NonNull DatabaseError error) {
+//
+//                            }
+//                        });
                     }
                 }
 
@@ -1025,7 +1105,7 @@ public class Chat_matchActivity extends AppCompatActivity {
         };
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        request.setRetryPolicy(new DefaultRetryPolicy(300,
+        request.setRetryPolicy(new DefaultRetryPolicy(100,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
@@ -1077,6 +1157,37 @@ public class Chat_matchActivity extends AppCompatActivity {
 
                 }
             });
+
+            FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.hasChild("image"))
+                    {
+                        String image = snapshot.child("image").getValue().toString();
+                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                        getToken(messageText,messagesenderID,image,messagereceiverID,name);
+                    }
+                    else if (!snapshot.hasChild("image")){
+                        String image = "";
+                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+
+                        getToken(messageText,messagesenderID,image,messagereceiverID,name);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            Calendar calendar = Calendar.getInstance();
+            //Returns current time in millis
+            long timeMilli = calendar.getTimeInMillis();
+            HashMap map = new HashMap();
+            map.put("Timestamp",timeMilli);
+            contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
+            contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
         }
     }
 

@@ -1,6 +1,9 @@
 package com.example.TradewithMe;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,11 +11,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +41,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -48,8 +55,8 @@ public class Profile extends Fragment {
     private CallbackManager callbackManager;
 
     //For illustrate
-    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile,rating_number,feedback_datail;
-    private DatabaseReference databaseReference,providerefference;
+    private TextView first_lastname,firstname,lasstname,email,phone_number,edit_profile,rating_number,feedback_datail,report_issue;
+    private DatabaseReference databaseReference,providerefference,issue_ref;
     private String userID;
 
     private FirebaseAuth firebaseAuth;
@@ -59,6 +66,14 @@ public class Profile extends Fragment {
     private CircleImageView profileImageView;
 
     private RatingBar ratingBar;
+
+    private Dialog issue_dialog;
+
+    private EditText issue_report;
+
+    private Button submit_issue,close_issue;
+
+    private  long maxid;
 
 
     @Override
@@ -119,7 +134,7 @@ public class Profile extends Fragment {
                 GoogleSignInClient googleSignInClient=GoogleSignIn.getClient(getContext(),gso);
                 googleSignInClient.signOut();
 
-                Intent intoLogin =new Intent(getActivity(),Login.class);
+                Intent intoLogin =new Intent(getActivity(),Start.class);
                 startActivity(intoLogin);
 
 
@@ -170,7 +185,16 @@ public class Profile extends Fragment {
                     firstname.setText("Firstname: "+firstname_fb);
                     lasstname.setText("Lastname: "+lastname_fb);
                     email.setText("Email: "+email_fb);
-                    phone_number.setText("Phone number: "+phone_number_fb);
+
+                    if (phone_number_fb.equals("The user have to edit first"))
+                    {
+                        phone_number.setText(Html.fromHtml("Phone number : <font color='#FF0000'>"+phone_number_fb+"</font>"));
+                    }
+                    else
+                    {
+                        phone_number.setText("Phone number: "+phone_number_fb);
+                    }
+
 
 
                 }
@@ -221,7 +245,17 @@ public class Profile extends Fragment {
                             firstname.setText("Firstname: "+firstname_fb);
                             lasstname.setText("Lastname: "+lastname_fb);
                             email.setText("Email: "+email_fb);
-                            phone_number.setText("Phone number: "+phone_number_fb);
+
+                            if (phone_number_fb.equals("The user have to edit first"))
+                            {
+                                phone_number.setText(Html.fromHtml("Phone number : <font color='#FF0000'>"+phone_number_fb+"</font>"));
+                            }
+                            else
+                            {
+                                phone_number.setText("Phone number: "+phone_number_fb);
+                            }
+
+
                         }
                         if (snapshot.hasChild("image"))
                         {
@@ -277,6 +311,88 @@ public class Profile extends Fragment {
             }
         });
 
+        report_issue = view.findViewById(R.id.report_issue_problem);
+        issue_ref = FirebaseDatabase.getInstance().getReference("Issue");
+
+        issue_ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists())
+                {
+                    maxid = snapshot.getChildrenCount();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        report_issue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                issue_dialog = new Dialog(getActivity());
+                issue_dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                issue_dialog.setContentView(R.layout.report_issue_dialog);
+                issue_dialog.setCancelable(false);
+
+                issue_report = issue_dialog.findViewById(R.id.issue_report);
+
+
+                submit_issue = issue_dialog.findViewById(R.id.submit_issue);
+                close_issue = issue_dialog.findViewById(R.id.close_isuue);
+
+                submit_issue.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        String issue_text = issue_report.getText().toString();
+                        if (issue_text.isEmpty())
+                        {
+                            issue_report.setError("Please specify your problem");
+                            issue_report.requestFocus();
+                            return;
+                        }
+                        else if (! issue_text.isEmpty()){
+
+                            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                            String time = sdf.format(new Date());
+
+                            SimpleDateFormat date = new SimpleDateFormat("dd MMM yyyy");
+                            String date_for = date.format(new Date());
+
+                            Issue_report issue_info = new Issue_report(
+                                    current_userID,
+                                    issue_text,
+                                    date_for,
+                                    time
+                            );
+
+                           issue_ref.child(String.valueOf(maxid+1)).setValue(issue_info).addOnCompleteListener(new OnCompleteListener<Void>() {
+                               @Override
+                               public void onComplete(@NonNull Task<Void> task) {
+                                   issue_dialog.dismiss();
+                               }
+                           });
+
+                        }
+                    }
+                });
+
+                close_issue.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        issue_dialog.dismiss();
+                    }
+                });
+
+                issue_dialog.show();
+
+            }
+
+        });
 
         return view;
 

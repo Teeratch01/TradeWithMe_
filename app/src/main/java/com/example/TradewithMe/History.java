@@ -34,6 +34,8 @@ public class History extends Fragment {
     private String uid_current_user;
     private FirebaseRecyclerOptions options;
     private FirebaseRecyclerAdapter adapter;
+    private LinearLayoutManager mLayoutManager;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -41,7 +43,10 @@ public class History extends Fragment {
         view =inflater.inflate(R.layout.fragment_history, container, false);
 
         history_recycler = view.findViewById(R.id.history_recyclerView);
-        history_recycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        mLayoutManager = new LinearLayoutManager(getContext());
+        mLayoutManager.setReverseLayout(true);
+        mLayoutManager.setStackFromEnd(true);
+        history_recycler.setLayoutManager(mLayoutManager);
 
         firebaseAuth = FirebaseAuth.getInstance();
         uid_current_user = firebaseAuth.getCurrentUser().getUid();

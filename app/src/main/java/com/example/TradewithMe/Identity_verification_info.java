@@ -28,6 +28,7 @@ import com.hbb20.CountryCodePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -98,6 +99,11 @@ public class Identity_verification_info extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
                 String date_of_birth_text = sdf.format(myCalendar.getTime());
 
+                SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
+                String date_for = format.format(new Date());
+
+                Log.d("check_dateformat",date_for);
+
                 String nationality_text = nationality.getSelectedCountryName();
                 String country_text = country.getSelectedCountryName();
                 String firstname_text = firstname.getText().toString().trim();
@@ -119,9 +125,10 @@ public class Identity_verification_info extends AppCompatActivity {
                     laser_code.requestFocus();
                     return;
                 }
-                else if (date_of_birth_text.isEmpty())
+                else if (date_of_birth_text.equals(date_for))
                 {
-                    date_of_birth.setError("Please specify your laser code or passport number");
+                    Toast.makeText(Identity_verification_info.this, "Please specify your date of birth", Toast.LENGTH_SHORT).show();
+                    date_of_birth.setError("Please specify your date of birth");
                     date_of_birth.requestFocus();
                     return;
                 }
@@ -175,6 +182,8 @@ public class Identity_verification_info extends AppCompatActivity {
                     map.put("register_resident",register_resident);
                     map.put("current_occupation",current_occupation_text);
                     map.put("company_name",company_name_text);
+
+                    Log.d("check_birthdate",date_of_birth_text);
 
 
 

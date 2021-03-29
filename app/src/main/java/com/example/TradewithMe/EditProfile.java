@@ -65,6 +65,8 @@ public class EditProfile extends AppCompatActivity {
         edit_lastname = findViewById(R.id.edit_profile_lastname);
         edit_pnumber = findViewById(R.id.edit_profile_pnumber);
 
+
+
         reference = database.getReference("Users");
         userID= FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -103,16 +105,40 @@ public class EditProfile extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                HashMap map = new HashMap();
-                map.put("firstname",edit_firstname.getText().toString().trim());
-                map.put("lastname",edit_lastname.getText().toString().trim());
-                map.put("phone_number",edit_pnumber.getText().toString().trim());
-                reference.child(userID).updateChildren(map);
+                String firstname = edit_firstname.getText().toString().trim();
+                String lastname = edit_lastname.getText().toString().trim();
+                String phone_num = edit_pnumber.getText().toString().trim();
 
-                updateProfileImage();
+                if (firstname.isEmpty())
+                {
+                    edit_firstname.setError("Please specify your firstname");
+                    edit_firstname.requestFocus();
+                    return;
+                }
+                else if (lastname.isEmpty())
+                {
+                    edit_lastname.setError("Please specify your lastname");
+                    edit_lastname.requestFocus();
+                    return;
+                }
+                else if (phone_num.isEmpty())
+                {
+                    edit_pnumber.setError("Please specify your phone number");
+                    edit_pnumber.requestFocus();
+                    return;
+                }
+                else {
 
-                Intent intent = new Intent(EditProfile.this,Profile.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    HashMap map = new HashMap();
+                    map.put("firstname",firstname);
+                    map.put("lastname",lastname);
+                    map.put("phone_number",phone_num);
+                    reference.child(userID).updateChildren(map);
+
+                    updateProfileImage();
+
+                    Intent intent = new Intent(EditProfile.this,Profile.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
 ////                setResult(EditProfile.RESULT_OK);
 //                Fragment frg = new FirstFragment();
@@ -122,7 +148,10 @@ public class EditProfile extends AppCompatActivity {
 //                ft.addToBackStack(FirstFragment.class.getSimpleName());
 //                ft.commit();
 
-                finish();
+                    finish();
+                }
+
+
 
 
             }
@@ -231,7 +260,7 @@ public class EditProfile extends AppCompatActivity {
         }
         else{
             progressDialog.dismiss();
-            Toast.makeText(this, "Image not selected",Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Image not selected",Toast.LENGTH_SHORT).show();
         }
     }
 

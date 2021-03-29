@@ -23,6 +23,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
@@ -38,6 +39,7 @@ public class Direct_Message extends AppCompatActivity {
     private String uid_current_user;
     private FirebaseRecyclerOptions options;
     private FirebaseRecyclerAdapter adapter;
+    private LinearLayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,13 @@ public class Direct_Message extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         chat_list = findViewById(R.id.chat_list);
-        chat_list.setLayoutManager(new LinearLayoutManager(this));
+        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager.setReverseLayout(true);
+        mLayoutManager.setStackFromEnd(true);
+
+        chat_list.setLayoutManager(mLayoutManager);
+
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         uid_current_user = firebaseAuth.getCurrentUser().getUid();
@@ -63,7 +71,8 @@ public class Direct_Message extends AppCompatActivity {
     private void contact_list()
     {
 
-        options = new FirebaseRecyclerOptions.Builder<User>().setQuery(reference,User.class).build();
+        Query orderbytime = reference.orderByChild("Timestamp");
+        options = new FirebaseRecyclerOptions.Builder<User>().setQuery(orderbytime,User.class).build();
         adapter = new FirebaseRecyclerAdapter<User,ContactViewHolder>(options) {
             @NonNull
             @Override
@@ -255,7 +264,11 @@ public class Direct_Message extends AppCompatActivity {
 
 
             name.setText(nameill);
-            Picasso.get().load(imageill).into(image);
+            if (!imageill.isEmpty())
+            {
+                Picasso.get().load(imageill).into(image);
+            }
+
 //            last_message.setText(last_textill);
 
         }

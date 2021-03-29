@@ -71,6 +71,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +87,7 @@ public class ChatActivity extends AppCompatActivity {
     EditText MessageInputText;
     FirebaseAuth firebaseAuth;
     String messageSenderID,messageReceiverID,last_message;
-    DatabaseReference rootRef,matchuser_ref,record_ref,currency_ref;
+    DatabaseReference rootRef,matchuser_ref,record_ref,currency_ref,contact_ref;
     List<Messages> messagesList = new ArrayList<>();
     LinearLayoutManager linearLayoutManager;
     MessageAdapter messageAdapter;
@@ -100,6 +101,7 @@ public class ChatActivity extends AppCompatActivity {
     String myUri = "";
     Button confirm_btn;
     long maxIdsender,maxIdreceiver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,26 +167,13 @@ public class ChatActivity extends AppCompatActivity {
         userMessageList.setAdapter(messageAdapter);
 
 
+
         SendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String messageText = MessageInputText.getText().toString();
                 sendMessage(messageText);
-                FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.hasChild("image")){
-                            String image = snapshot.child("image").getValue().toString();
-                            String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
-                            getToken(MessageInputText.getText().toString(),messageSenderID,image,messageReceiverID,name);
-                        }
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
             }
         });
 
@@ -273,6 +262,7 @@ public class ChatActivity extends AppCompatActivity {
         record_ref =  FirebaseDatabase.getInstance().getReference("Record");
         matchuser_ref = FirebaseDatabase.getInstance().getReference("Matched_user");
         currency_ref = FirebaseDatabase.getInstance().getReference("Currency");
+        contact_ref = FirebaseDatabase.getInstance().getReference("Contacts");
         record_ref.child(messageSenderID).child("Matched").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -317,7 +307,7 @@ public class ChatActivity extends AppCompatActivity {
                 {
                     AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this);
 
-                    alert.setCancelable(true);
+                    alert.setCancelable(false);
                     alert.setTitle("Notification");
                     alert.setMessage("Please select the currency that you want to exchange with this exchanger before match");
                     alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
@@ -327,7 +317,10 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     });
 
-                    alert.show();
+                    if (!isFinishing()) {
+                        // show popup
+                        alert.show();
+                    }
                 }
                 else {
 
@@ -341,7 +334,7 @@ public class ChatActivity extends AppCompatActivity {
                                     public void onComplete(@NonNull Task<Void> task) {
                                         AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this);
 
-                                        alert.setCancelable(true);
+                                        alert.setCancelable(false);
                                         alert.setTitle("Congratulations");
                                         alert.setMessage(Html.fromHtml("You are already match<br><font color='#FF0000'>*Suggestion: You should meet each other in the public ex. supermarket, coffee shop</font>"));
 
@@ -357,6 +350,11 @@ public class ChatActivity extends AppCompatActivity {
                                                             String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
                                                             getToken("The exchanger want to match with you , Do you want to accept?", messageSenderID, image, messageReceiverID, name);
                                                         }
+                                                        else if (!snapshot.hasChild("image")){
+                                                            String image = "";
+                                                            String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                            getToken("The exchanger want to match with you , Do you want to accept?",messageSenderID,image,messageReceiverID,name);
+                                                        }
                                                     }
 
                                                     @Override
@@ -371,7 +369,10 @@ public class ChatActivity extends AppCompatActivity {
                                                 startActivity(start_chatmatch);
                                             }
                                         });
-                                        alert.show();
+                                        if (!isFinishing()) {
+                                            // show popup
+                                            alert.show();
+                                        }
                                     }
                                 });
                             }
@@ -451,6 +452,15 @@ public class ChatActivity extends AppCompatActivity {
                                     if (task.isSuccessful())
                                     {
                                         Toast.makeText(ChatActivity.this,"Message Sent Succesfully ",Toast.LENGTH_SHORT).show();
+
+                                        Calendar calendar = Calendar.getInstance();
+                                        //Returns current time in millis
+                                        long timeMilli = calendar.getTimeInMillis();
+                                        HashMap map = new HashMap();
+                                        map.put("Timestamp",timeMilli);
+                                        contact_ref.child(messageSenderID).child(messageReceiverID).updateChildren(map);
+                                        contact_ref.child(messageReceiverID).child(messageSenderID).updateChildren(map);
+
                                         FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -459,6 +469,12 @@ public class ChatActivity extends AppCompatActivity {
                                                     String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
                                                     getToken("Sent Photo",messageSenderID,image,messageReceiverID,name);
                                                 }
+                                                else if (!snapshot.hasChild("image")){
+                                                    String image = "";
+                                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                    getToken("Sent Photo",messageSenderID,image,messageReceiverID,name);
+                                                }
+
                                             }
 
                                             @Override
@@ -535,21 +551,26 @@ public class ChatActivity extends AppCompatActivity {
                         String googlemap_link = "https://www.google.com/maps/search/?api=1&query="+latitude+","+longitude;
                         sendMessage(googlemap_link);
 
-                        FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                if (snapshot.hasChild("image")){
-                                    String image = snapshot.child("image").getValue().toString();
-                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
-                                    getToken(googlemap_link,messageSenderID,image,messageReceiverID,name);
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
+//                        FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addValueEventListener(new ValueEventListener() {
+//                            @Override
+//                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                                if (snapshot.hasChild("image")){
+//                                    String image = snapshot.child("image").getValue().toString();
+//                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+//                                    getToken(googlemap_link,messageSenderID,image,messageReceiverID,name);
+//                                }
+//                                else if (!snapshot.hasChild("image")){
+//                                    String image = "";
+//                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+//                                    getToken(googlemap_link,messageSenderID,image,messageReceiverID,name);
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(@NonNull DatabaseError error) {
+//
+//                            }
+//                        });
 
 
 
@@ -606,6 +627,36 @@ public class ChatActivity extends AppCompatActivity {
 
                 }
             });
+
+            FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.hasChild("image")){
+                        String image = snapshot.child("image").getValue().toString();
+                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                        getToken(messageText,messageSenderID,image,messageReceiverID,name);
+                    }
+                    else if (!snapshot.hasChild("image")){
+                        String image = "";
+                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                        getToken(messageText,messageSenderID,image,messageReceiverID,name);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            Calendar calendar = Calendar.getInstance();
+            //Returns current time in millis
+            long timeMilli = calendar.getTimeInMillis();
+            HashMap map = new HashMap();
+            map.put("Timestamp",timeMilli);
+            contact_ref.child(messageSenderID).child(messageReceiverID).updateChildren(map);
+            contact_ref.child(messageReceiverID).child(messageSenderID).updateChildren(map);
+
         }
     }
 
@@ -637,13 +688,13 @@ public class ChatActivity extends AppCompatActivity {
                             if (!snapshot.child(messageReceiverID).child(messageSenderID).hasChild("Decline request")) {
 
                                 AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this, R.style.AlertDialogCustom);
-                                alert.setCancelable(true);
+                                alert.setCancelable(false);
                                 alert.setTitle("Notifications");
                                 alert.setMessage(Html.fromHtml("Do you want to match with this user?<br><font color='#FF0000'>*Suggestion: If you match with this user , You should meet each other in the public ex. supermarket, coffee shop</font>"));
                                 alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addValueEventListener(new ValueEventListener() {
+                                        FirebaseDatabase.getInstance().getReference("Users").child(messageSenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                                 if (snapshot.hasChild("image")) {
@@ -655,6 +706,16 @@ public class ChatActivity extends AppCompatActivity {
                                                     FirebaseDatabase.getInstance().getReference("Matched_user").child(messageReceiverID).child(messageSenderID).updateChildren(map);
                                                     getToken("The exchanger decline your request,please contact again.", messageSenderID, image, messageReceiverID, name);
                                                 }
+                                                else if (!snapshot.hasChild("image")){
+                                                    String image = "";
+                                                    String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+
+                                                    HashMap map = new HashMap();
+                                                    map.put("Decline request", "yes");
+                                                    FirebaseDatabase.getInstance().getReference("Matched_user").child(messageReceiverID).child(messageSenderID).updateChildren(map);
+                                                    getToken("The exchanger decline your request,please contact again.",messageSenderID,image,messageReceiverID,name);
+                                                }
+
                                             }
 
                                             @Override
@@ -675,6 +736,7 @@ public class ChatActivity extends AppCompatActivity {
                                             public void onSuccess(Void aVoid) {
                                                 record_ref.child(messageSenderID).child("Matched").child(String.valueOf(maxIdsender + 1)).setValue(setValuesender);
                                                 record_ref.child(messageReceiverID).child("Matched").child(String.valueOf(maxIdreceiver + 1)).setValue(setValuereceiver);
+
                                                 HashMap map = new HashMap();
                                                 map.put("matched", "yes");
 
@@ -709,7 +771,7 @@ public class ChatActivity extends AppCompatActivity {
                         if (snapshot.child(messageSenderID).child(messageReceiverID).hasChild("Decline request"))
                         {
                             AlertDialog.Builder alert = new AlertDialog.Builder(ChatActivity.this,R.style.AlertDialogCustom);
-                            alert.setCancelable(true);
+                            alert.setCancelable(false);
                             alert.setTitle("Notifications");
                             alert.setMessage(name_from_otheract +" decline your request , Please contact this user again.");
 
@@ -721,7 +783,10 @@ public class ChatActivity extends AppCompatActivity {
                                 }
                             });
 
-                            alert.show();
+                            if (!isFinishing()) {
+                                // show popup
+                                alert.show();
+                            }
                         }
                     }
                 }
@@ -809,7 +874,7 @@ public class ChatActivity extends AppCompatActivity {
         };
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        request.setRetryPolicy(new DefaultRetryPolicy(300,
+        request.setRetryPolicy(new DefaultRetryPolicy(100,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 

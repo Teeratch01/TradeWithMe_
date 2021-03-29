@@ -98,7 +98,8 @@
                     android:hint="Optional for search"
                     android:textSize="14dp"
                     android:ems="8"
-                    android:inputType="number" />
+                    android:digits="0123456789."
+                    android:inputType="numberDecimal" />
 
             </TableRow>
 
@@ -171,6 +172,103 @@
                     android:textColor="@color/black"
                     android:text="2nd" />
             </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/currency_post_checking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profile_image_checking"
+                android:layout_width="55dp"
+                android:layout_height="49dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="9dp"
+                android:src="@drawable/profile"
+                app:civ_border_width="2dp" />
+
+            <LinearLayout
+                android:layout_width="161dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView17"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Name"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:id="@+id/name_surname_checking"
+                    android:layout_width="161dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp"
+
+                    android:gravity="center"
+                    android:text=""
+
+                    android:textColor="@color/black" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="Amount"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/amount_ill_checking"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp"
+                    android:layout_marginEnd="21dp"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="@color/black" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView11"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="Rates"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/rate_ill_checking"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="13dp"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="@color/black" />
+            </LinearLayout>
+
+
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

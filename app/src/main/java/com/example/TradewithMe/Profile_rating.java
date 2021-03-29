@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,6 +30,7 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,6 +60,8 @@ public class Profile_rating extends AppCompatActivity {
         uid_exchanger=getIntent().getExtras().get("userID_exchanger").toString();
         transaction_number = getIntent().getExtras().get("Transaction_number").toString();
 
+        Log.d("check_phonenumber",phone_number);
+
 
         Log.d("check_uid",uid_exchanger);
 
@@ -72,10 +76,26 @@ public class Profile_rating extends AppCompatActivity {
 
         name_ill.setText("Name : "+name);
         email_ill.setText("Email : "+email);
-        phone_number_ill.setText("Phone number : "+phone_number);
+
+        if (phone_number.equals("The user have to edit first"))
+        {
+            phone_number_ill.setText(Html.fromHtml("Phone number : <font color='#FF0000'>"+phone_number+"</font>"));
+
+        }
+        else
+        {
+            phone_number_ill.setText("Phone number : "+phone_number);
+        }
 
 
-        Picasso.get().load(image).into(profile_iamge_ill);
+
+
+
+        if (!image.isEmpty())
+        {
+            Picasso.get().load(image).into(profile_iamge_ill);
+        }
+
 
         FirebaseDatabase.getInstance().getReference("Users").child(uid_exchanger).addValueEventListener(new ValueEventListener() {
             @Override
@@ -122,10 +142,14 @@ public class Profile_rating extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String Contact = "yes";
+                Calendar calendar = Calendar.getInstance();
+                //Returns current time in millis
+                long timeMilli = calendar.getTimeInMillis();
 
                 Contacts setValue = new Contacts(
                         Contact,
-                        transaction_number
+                        transaction_number,
+                        timeMilli
                 );
 
 

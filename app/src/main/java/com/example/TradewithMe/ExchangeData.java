@@ -1,7 +1,8 @@
 package com.example.TradewithMe;
 
 public class ExchangeData {
-    public String have_currency,amount,want_currency,rates,uid,latitude,longitude,combine_currency,matched;
+    public String have_currency,want_currency,rates,uid,latitude,longitude,combine_currency,matched;
+    public long amount;
 
     public String getHave_currency() {
         return have_currency;
@@ -11,12 +12,12 @@ public class ExchangeData {
         this.have_currency = have_currency;
     }
 
-    public String getAmount() {
+    public long getAmount() {
         return amount;
     }
 
 
-    public void setAmount(String amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 
@@ -82,7 +83,7 @@ public class ExchangeData {
     }
 
 
-    public ExchangeData(String have_currency, String amount, String want_currency, String rates, String uid, String latitude, String longitude,String combine_currency,String matched) {
+    public ExchangeData(String have_currency, long amount, String want_currency, String rates, String uid, String latitude, String longitude,String combine_currency,String matched) {
         this.have_currency = have_currency;
         this.amount = amount;
         this.want_currency = want_currency;
