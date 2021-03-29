@@ -239,6 +239,58 @@ class Login : AppCompatActivity() {
                                 map.put("token", deviceToken.toString())
                                 FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>).addOnSuccessListener {
 
+                                    if (user_id!= null)
+                                    {
+                                        user_ref.child(user_id).addValueEventListener(object : ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                if(snapshot.exists())
+                                                {
+                                                    if (snapshot.child("token").exists())
+                                                    {
+                                                        var token_fb: String = snapshot.child("token").getValue().toString()
+                                                        if (!token_fb!!.equals("")) {
+                                                            val checkToken: String = FirebaseInstanceId.getInstance().getToken().toString()
+                                                            if (!token_fb!!.equals(checkToken)) {
+                                                                if (!user_id.equals(null))
+                                                                {
+                                                                    FirebaseAuth.getInstance().signOut()
+                                                                    LoginManager.getInstance().logOut()
+                                                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                                                                    val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
+                                                                    googleSignInClient.signOut()
+
+                                                                    Log.d("check_id", user_id)
+                                                                    Log.d("check_condition", token_fb)
+                                                                    Log.d("check_condition2",checkToken)
+
+                                                                    if(!user_id.isEmpty())
+                                                                    {
+                                                                        val intent = Intent(this@Login, Start::class.java)
+                                                                        intent.putExtra("showDialog",true)
+//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                                                        startActivityForResult(intent,2)
+                                                                        user_id = ""
+                                                                        token_fb = ""
+
+                                                                    }
+
+                                                                }
+                                                            }
+
+                                                        }
+                                                    }
+
+
+                                                }
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+                                                TODO("Not yet implemented")
+                                            }
+
+                                        })
+                                    }
+
                                     loadingDialog.dismissdialog()
                                     Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
                                     val intent = Intent(this@Login, Navigation::class.java)
@@ -258,62 +310,57 @@ class Login : AppCompatActivity() {
 
                 })
 
-                if (user_id!= null)
-                {
-                    user_ref.child(user_id).addValueEventListener(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            if (!snapshot.child("token").getValue()!!.equals("")) {
-                                val checkToken = FirebaseInstanceId.getInstance().getToken()
-                                if (!snapshot.child("token").getValue()!!.equals(checkToken)) {
-                                    if (!user_id.equals(null))
-                                    {
-                                        FirebaseAuth.getInstance().signOut()
-                                        LoginManager.getInstance().logOut()
-                                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-                                        val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
-                                        googleSignInClient.signOut()
-
-                                        Log.d("check_id", user_id)
-                                        Log.d("check_condition", snapshot.child("token").getValue() as String)
-
-                                        if(!user_id.isEmpty())
-                                        {
-                                            val intent = Intent(this@Login, Start::class.java)
-                                            intent.putExtra("showDialog",true)
-//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                            startActivityForResult(intent,2)
-                                            user_id = ""
-                                        }
-
-                                    }
-
-
-
-
-//                                val alert = AlertDialog.Builder(this@Login)
-//                                alert.setCancelable(true)
-//                                alert.setTitle("Notification")
-//                                alert.setMessage("You log in on another device")
+//                if (user_id!= null)
+//                {
+//                    user_ref.child(user_id).addValueEventListener(object : ValueEventListener {
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            if(snapshot.exists())
+//                            {
+//                                if (snapshot.child("token").exists())
+//                                {
+//                                    var token_fb: String = snapshot.child("token").getValue().toString()
+//                                    if (!token_fb!!.equals("")) {
+//                                        val checkToken: String = FirebaseInstanceId.getInstance().getToken().toString()
+//                                        if (!token_fb!!.equals(checkToken)) {
+//                                            if (!user_id.equals(null))
+//                                            {
+//                                                FirebaseAuth.getInstance().signOut()
+//                                                LoginManager.getInstance().logOut()
+//                                                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+//                                                val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
+//                                                googleSignInClient.signOut()
 //
-//                                alert.setNegativeButton("Dismiss") { dialog, which -> dialog.cancel() }
+//                                                Log.d("check_id", user_id)
+//                                                Log.d("check_condition", token_fb)
+//                                                Log.d("check_condition2",checkToken)
 //
-//                                alert.show()
-
-
-
-
-
-                                }
-
-                            }
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                            TODO("Not yet implemented")
-                        }
-
-                    })
-                }
+//                                                if(!user_id.isEmpty())
+//                                                {
+//                                                    val intent = Intent(this@Login, Start::class.java)
+//                                                    intent.putExtra("showDialog",true)
+////                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//                                                    startActivityForResult(intent,2)
+//                                                    user_id = ""
+//                                                    token_fb = ""
+//
+//                                                }
+//
+//                                            }
+//                                        }
+//
+//                                    }
+//                                }
+//
+//
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {
+//                            TODO("Not yet implemented")
+//                        }
+//
+//                    })
+//                }
 
 
 
