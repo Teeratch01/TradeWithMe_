@@ -69,6 +69,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -77,6 +80,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -101,6 +110,11 @@ public class ChatActivity extends AppCompatActivity {
     String myUri = "";
     Button confirm_btn;
     long maxIdsender,maxIdreceiver;
+
+    //Encryption
+    private byte encryptionKey[] = {9,115,51,86,105,4,-31,-23,-68,88,17,20,3,-105,119,-53};
+    private Cipher cipher,deciper;
+    private SecretKeySpec secretKeySpec;
 
 
     @Override
@@ -583,6 +597,18 @@ public class ChatActivity extends AppCompatActivity {
 
     private void sendMessage(String messageText) {
 
+        //Encryption message part
+        try {
+            cipher = Cipher.getInstance("AES");
+            deciper = Cipher.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+
+        secretKeySpec  = new SecretKeySpec(encryptionKey,"AES");
+
         if (TextUtils.isEmpty(messageText))
         {
 
@@ -600,7 +626,7 @@ public class ChatActivity extends AppCompatActivity {
             String date_for = date.format(new Date());
 
             Map mesageTextBody = new HashMap();
-            mesageTextBody.put("message",messageText);
+            mesageTextBody.put("message",AESEncryptionMethod(messageText));
             mesageTextBody.put("type","text");
             mesageTextBody.put("from",messageSenderID);
             mesageTextBody.put("time",time);
@@ -659,6 +685,33 @@ public class ChatActivity extends AppCompatActivity {
 
         }
     }
+
+    private String AESEncryptionMethod(String string)
+    {
+        byte[] stringBytes = string.getBytes();
+        byte[] encryptionByte = new byte[stringBytes.length];
+
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE,secretKeySpec);
+            encryptionByte = cipher.doFinal(stringBytes);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        String returnString = null;
+        try {
+            returnString = new String(encryptionByte,"ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return  returnString;
+    }
+
 
     @Override
     protected void onStart() {

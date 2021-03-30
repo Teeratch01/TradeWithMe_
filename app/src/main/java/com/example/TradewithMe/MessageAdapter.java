@@ -24,7 +24,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -36,6 +45,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private DatabaseReference userRef;
     private String previous_date="";
     private Context context;
+
+    //Encryption
+    private byte encryptionKey[] = {9,115,51,86,105,4,-31,-23,-68,88,17,20,3,-105,119,-53};
+    private Cipher cipher,deciper;
+    private SecretKeySpec secretKeySpec;
 
     public MessageAdapter(List<Messages> userMessageList,Context context)
     {
@@ -131,7 +145,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.timesender.setVisibility(View.VISIBLE);
 //                holder.senderMessageText.setBackgroundResource(R.drawable.sender_message_layout);
                 holder.senderMessageText.setTextColor(Color.WHITE);
-                holder.senderMessageText.setText(messages.getMessage());
+                try {
+                    holder.senderMessageText.setText(AESDecryptionMethod(messages.getMessage()));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 holder.timesender.setText(messages.getTime());
 
 //                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
@@ -157,7 +175,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.timereceiver.setVisibility(View.VISIBLE);
 //                holder.receiverMessageText.setBackgroundResource(R.drawable.receiver_message_layout);
                 holder.receiverMessageText.setTextColor(Color.BLACK);
-                holder.receiverMessageText.setText(messages.getMessage());
+                try {
+                    holder.receiverMessageText.setText(AESDecryptionMethod(messages.getMessage()));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 holder.timereceiver.setText(messages.getTime());
 //                holder.last_text.setText(messages.getMessage());
 //                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
@@ -240,6 +262,40 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public int getItemCount() {
         return userMessageList.size();
     }
+
+    private String AESDecryptionMethod(String string) throws UnsupportedEncodingException {
+
+        try {
+            cipher = Cipher.getInstance("AES");
+            deciper = Cipher.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+
+        secretKeySpec  = new SecretKeySpec(encryptionKey,"AES");
+
+        byte[] EncryptedByte = string.getBytes("ISO-8859-1");
+        String decyptedString = string;
+
+        byte[] decryption;
+
+        try {
+            deciper.init(cipher.DECRYPT_MODE,secretKeySpec);
+            decryption = deciper.doFinal(EncryptedByte);
+            decyptedString = new String(decryption);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return decyptedString;
+    }
+
 
 
 }

@@ -29,6 +29,16 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class Direct_Message extends AppCompatActivity {
@@ -40,6 +50,11 @@ public class Direct_Message extends AppCompatActivity {
     private FirebaseRecyclerOptions options;
     private FirebaseRecyclerAdapter adapter;
     private LinearLayoutManager mLayoutManager;
+
+    //Encryption
+    private byte encryptionKey[] = {9,115,51,86,105,4,-31,-23,-68,88,17,20,3,-105,119,-53};
+    private Cipher cipher,deciper;
+    private SecretKeySpec secretKeySpec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,8 +205,11 @@ public class Direct_Message extends AppCompatActivity {
                                     holder.setLastMessage("Photo");
                                 }
                                 else{
-
-                                    holder.setLastMessage(messages.getMessage());
+                                    try {
+                                        holder.setLastMessage(AESDecryptionMethod(messages.getMessage()));
+                                    } catch (UnsupportedEncodingException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                                 holder.settime(messages.getTime());
                                 holder.setdate(messages.getDate());
@@ -226,8 +244,6 @@ public class Direct_Message extends AppCompatActivity {
                     public void onCancelled(@NonNull DatabaseError error) {
 
                     }
-
-
 
                 });
 
@@ -291,6 +307,39 @@ public class Direct_Message extends AppCompatActivity {
 
 
 
+    }
+
+    private String AESDecryptionMethod(String string) throws UnsupportedEncodingException {
+
+        try {
+            cipher = Cipher.getInstance("AES");
+            deciper = Cipher.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+
+        secretKeySpec  = new SecretKeySpec(encryptionKey,"AES");
+
+        byte[] EncryptedByte = string.getBytes("ISO-8859-1");
+        String decyptedString = string;
+
+        byte[] decryption;
+
+        try {
+            deciper.init(cipher.DECRYPT_MODE,secretKeySpec);
+            decryption = deciper.doFinal(EncryptedByte);
+            decyptedString = new String(decryption);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return decyptedString;
     }
 
 
