@@ -52,6 +52,7 @@ public class Identity_verification_info extends AppCompatActivity {
         laser_code = findViewById(R.id.laser_code);
         date_of_birth = findViewById(R.id.date_of_birth);
         nationality = (CountryCodePicker) findViewById(R.id.nationality_picker);
+
         country = (CountryCodePicker) findViewById(R.id.country_picker);
         firstname = findViewById(R.id.firstname_iv);
         lastname = findViewById(R.id.lastname_iv);

@@ -129,6 +129,7 @@
                 android:id="@+id/nationality_picker"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
+                app:ccp_defaultNameCode="TH"
                 app:ccp_showFullName="true"
                 app:ccp_showPhoneCode="false"
                 app:ccp_showNameCode="false"/>
@@ -155,6 +156,7 @@
                 android:id="@+id/country_picker"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
+                app:ccp_defaultNameCode="TH"
                 app:ccp_showFullName="true"
                 app:ccp_showPhoneCode="false"
                 app:ccp_showNameCode="false"/>
