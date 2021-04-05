@@ -13,7 +13,10 @@
         android:label="TradeWithMe"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication">
+        android:theme="@style/Theme.MyApplication"
+
+        >
+
         <activity android:name=".Identity_verification_info"></activity>
         <activity android:name=".Identify_verification_id" />
         <activity android:name=".Feedback" />

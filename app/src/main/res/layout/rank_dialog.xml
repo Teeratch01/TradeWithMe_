@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="50dp"
     android:background="@drawable/dialog_bf">
@@ -21,15 +22,28 @@
         android:theme="@style/RatingBar"
         android:isIndicator="false"/>
 
-    <EditText
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginTop="10dp"
         android:id="@+id/rating_comment"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint=" Optional Comment"
-        android:paddingBottom="70dp"
-        android:background="@drawable/textinputborder"
-        android:inputType="textPersonName" />
+        android:hint=" Your Comment"
+        app:helperText="Optional"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxBackgroundMode="outline"
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button android:id="@+id/rank_dialog_button"
         android:layout_height="wrap_content"

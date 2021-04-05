@@ -29,6 +29,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -69,11 +70,13 @@ public class Profile extends Fragment {
 
     private Dialog issue_dialog;
 
-    private EditText issue_report;
+//    private EditText issue_report;
 
     private Button submit_issue,close_issue;
 
     private  long maxid;
+
+    private TextInputLayout issue_report;
 
 
     @Override
@@ -348,7 +351,7 @@ public class Profile extends Fragment {
                     @Override
                     public void onClick(View v) {
 
-                        String issue_text = issue_report.getText().toString();
+                        String issue_text = issue_report.getEditText().getText().toString();
                         if (issue_text.isEmpty())
                         {
                             issue_report.setError("Please specify your problem");

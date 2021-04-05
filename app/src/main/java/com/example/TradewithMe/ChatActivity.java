@@ -240,7 +240,22 @@ public class ChatActivity extends AppCompatActivity {
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
 
-                userMessageList.smoothScrollToPosition(userMessageList.getAdapter().getItemCount());
+                userMessageList.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                    @Override
+                    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+
+                        if ( bottom < oldBottom) {
+                            userMessageList.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    userMessageList.smoothScrollToPosition(userMessageList.getAdapter().getItemCount());
+                                }
+                            }, 0);
+                        }
+                    }
+                });
+
+                userMessageList.scrollToPosition(userMessageList.getAdapter().getItemCount()-1);
 
                 last_message = messages.getMessage();
 
@@ -402,6 +417,14 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
+
+//        userMessageList.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+//            @Override
+//            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+//
+//                userMessageList.scrollToPosition(mMessages.size()-1);
+//            }
+//        });
 
 
     }

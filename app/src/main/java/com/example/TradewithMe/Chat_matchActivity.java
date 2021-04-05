@@ -46,6 +46,7 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -83,7 +84,7 @@ public class Chat_matchActivity extends AppCompatActivity {
     String name_fromchat,messagereceiverID,messagesenderID,latitude,longitude,myUri = "",transaction_num;
     TextView name_chatmatch,time_chatmatch,rating_name;
     ImageButton SendMessageButton,SendLocationButton,SendImageButton;
-    EditText MessageInputText,rating_comment;
+    EditText MessageInputText;
     FirebaseAuth firebaseAuth;
     DatabaseReference rootRef,record_ref,success_ref,matched_ref,feedback_ref,contact_ref;
     StorageReference firebaseStorage;
@@ -98,6 +99,7 @@ public class Chat_matchActivity extends AppCompatActivity {
     Dialog rankDailog;
     RatingBar ratingBar;
     long maxIdsender,maxIdreceiver,maxIdfeedback;
+    TextInputLayout rating_comment;
 
     //Encryption
     private byte encryptionKey[] = {9,115,51,86,105,4,-31,-23,-68,88,17,20,3,-105,119,-53};
@@ -218,7 +220,22 @@ public class Chat_matchActivity extends AppCompatActivity {
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
 
-                userMessageList.smoothScrollToPosition(userMessageList.getAdapter().getItemCount());
+                userMessageList.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                    @Override
+                    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+
+                        if ( bottom < oldBottom) {
+                            userMessageList.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    userMessageList.smoothScrollToPosition(userMessageList.getAdapter().getItemCount());
+                                }
+                            }, 0);
+                        }
+                    }
+                });
+
+                userMessageList.scrollToPosition(userMessageList.getAdapter().getItemCount()-1);
 
             }
 
@@ -429,7 +446,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                                                         HashMap map = new HashMap();
                                                         map.put("ratings", String.format("%.02f", update_user_rating));
 
-                                                        String comment = rating_comment.getText().toString().trim();
+                                                        String comment = rating_comment.getEditText().getText().toString().trim();
 
                                                         if (comment.equals(""))
                                                         {
@@ -473,7 +490,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                                                         HashMap map = new HashMap();
                                                         map.put("ratings", ratingBar.getRating());
 
-                                                        String comment = rating_comment.getText().toString().trim();
+                                                        String comment = rating_comment.getEditText().getText().toString().trim();
 
                                                         if (comment.equals(""))
                                                         {
@@ -607,7 +624,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                                                 HashMap map = new HashMap();
                                                 map.put("ratings", String.format("%.02f", update_user_rating));
 
-                                                String comment = rating_comment.getText().toString().trim();
+                                                String comment = rating_comment.getEditText().getText().toString().trim();
 
                                                 if (comment.equals(""))
                                                 {
@@ -705,7 +722,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                                                 HashMap map = new HashMap();
                                                 map.put("ratings", ratingBar.getRating());
 
-                                                String comment = rating_comment.getText().toString().trim();
+                                                String comment = rating_comment.getEditText().getText().toString().trim();
 
                                                 if (comment.equals(""))
                                                 {
