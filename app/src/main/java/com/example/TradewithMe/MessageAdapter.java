@@ -129,15 +129,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         holder.date_in_chat.setVisibility(View.GONE);
 
 
-
-
         if (fromMessageType.equals("text"))
         {
-//            holder.receiverMessageText.setVisibility(View.INVISIBLE);
-//            holder.receiverProfileImage.setVisibility(View.INVISIBLE);
-//            holder.senderMessageText.setVisibility(View.INVISIBLE);
-//            holder.timesender.setVisibility(View.INVISIBLE);
-//            holder.timereceiver.setVisibility(View.INVISIBLE);
 
             if (fromUserID.equals(messageSenderID))
             {
@@ -152,21 +145,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
                 holder.timesender.setText(messages.getTime());
 
-//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
-//                {
-//                    holder.date_in_chat.setVisibility(View.VISIBLE);
-//                    holder.date_in_chat.setText(fromdate);
-//                    previous_date = fromdate;
-//                }
-//                else
-//                {
-//                    holder.date_in_chat.setVisibility(View.GONE);
-//                }
-
-
-
-
-//                holder.last_text.setText(messages.getMessage());
             }
             else {
 
@@ -181,17 +159,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     e.printStackTrace();
                 }
                 holder.timereceiver.setText(messages.getTime());
-//                holder.last_text.setText(messages.getMessage());
-//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
-//                {
-//                    holder.date_in_chat.setVisibility(View.VISIBLE);
-//                    holder.date_in_chat.setText(fromdate);
-//                    previous_date = fromdate;
-//                }
-//                else
-//                {
-//                    holder.date_in_chat.setVisibility(View.GONE);
-//                }
 
             }
         }
@@ -212,17 +179,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 holder.timeimagesender.setVisibility(View.VISIBLE);
                 holder.timeimagesender.setText(messages.getTime());
-//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
-//                {
-//                    holder.date_in_chat.setVisibility(View.VISIBLE);
-//                    holder.date_in_chat.setText(fromdate);
-//                    previous_date = fromdate;
-//                }
-//                else
-//                {
-//                    holder.date_in_chat.setVisibility(View.GONE);
-//                }
-
             }
             else {
                 holder.receiverProfileImage.setVisibility(View.VISIBLE);
@@ -241,17 +197,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 holder.timeimagereceiver.setVisibility(View.VISIBLE);
                 holder.timeimagereceiver.setText(messages.getTime());
-
-//                if (!previous_date.equals(fromdate)|| previous_date.equals(""))
-//                {
-//                    holder.date_in_chat.setVisibility(View.VISIBLE);
-//                    holder.date_in_chat.setText(fromdate);
-//                    previous_date = fromdate;
-//                }
-//                else
-//                {
-//                    holder.date_in_chat.setVisibility(View.GONE);
-//                }
 
             }
 

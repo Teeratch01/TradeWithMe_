@@ -43,7 +43,7 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
             String senderImage =map.get("senderImage");
             String receiverID =map.get("receiverID");
 
-            if (message.equals("The exchanger want to match with you , Do you want to accept?") || message.equals("The exchanger decline your request,please contact again."))
+            if (message.equals("The exchanger want to match with you , Do you want to accept?") || message.equals("The exchanger decline your request,please contact again.") || message.equals(title+" has edit the transaction.Please contact the user again."))
             {
                 if (Build.VERSION.SDK_INT>Build.VERSION_CODES.O)
                 {
@@ -157,7 +157,7 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
     private void createconfirmNormalNotificaiton(String title,String message,String senderID,String senderImage,String receiverID)
     {
         Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"1000");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"1200");
         builder.setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -166,10 +166,7 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
                 .setColor(ResourcesCompat.getColor(getResources(),R.color.purple_500,null))
 
                 .setSound(uri);
-
-//        Intent intent = new Intent(this,ChatActivity.class);
-//        intent.putExtra("name_chatact",title);
-//        intent.putExtra("other_uid_chatact",senderID);
+        
         FirebaseDatabase.getInstance().getReference("Contacts").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -206,7 +203,7 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createconfirmOreoNotification(String title, String message, String senderID, String senderImage, String receiverID)
     {
-        NotificationChannel channel =new NotificationChannel("1000","Message",NotificationManager.IMPORTANCE_HIGH);
+        NotificationChannel channel =new NotificationChannel("1200","Message",NotificationManager.IMPORTANCE_HIGH);
         channel.setShowBadge(true);
         channel.enableLights(true);
         channel.enableVibration(true);
@@ -256,7 +253,7 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
     private void createsuccessNormalNotificaiton(String title,String message,String senderID,String senderImage,String receiverID)
     {
         Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"1000");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"1300");
         builder.setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -305,7 +302,7 @@ public class FirebaseNotificationServce extends FirebaseMessagingService {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createsuccessOreoNotification(String title, String message, String senderID, String senderImage, String receiverID)
     {
-        NotificationChannel channel =new NotificationChannel("1000","Message",NotificationManager.IMPORTANCE_HIGH);
+        NotificationChannel channel =new NotificationChannel("1300","Message",NotificationManager.IMPORTANCE_HIGH);
         channel.setShowBadge(true);
         channel.enableLights(true);
         channel.enableVibration(true);

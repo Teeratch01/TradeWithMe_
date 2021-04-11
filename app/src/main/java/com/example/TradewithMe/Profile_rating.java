@@ -3,6 +3,8 @@ package com.example.TradewithMe;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
@@ -19,6 +21,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -44,7 +47,7 @@ public class Profile_rating extends AppCompatActivity {
     TextView name_ill,email_ill,phone_number_ill,rating_ill,feedback_detail;
     CircleImageView profile_iamge_ill;
     Button Close,start_chat;
-    DatabaseReference reference,user_ref;
+    DatabaseReference reference,user_ref,match_ref;
     FirebaseAuth firebaseAuth;
     RatingBar ratingBar;
 
@@ -133,6 +136,7 @@ public class Profile_rating extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         reference = FirebaseDatabase.getInstance().getReference("Contacts");
+        match_ref = FirebaseDatabase.getInstance().getReference("Matched_user");
         uid_current_user = firebaseAuth.getUid();
 
         user_ref = FirebaseDatabase.getInstance().getReference("Users").child(uid_current_user);
@@ -152,20 +156,95 @@ public class Profile_rating extends AppCompatActivity {
                         timeMilli
                 );
 
-
-                reference.child(uid_current_user).child(uid_exchanger).setValue(setValue);
-
-                reference.child(uid_exchanger).child(uid_current_user).setValue(setValue);
-
-                user_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                match_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.hasChild("image")) {
-                            String image = snapshot.child("image").getValue().toString();
-                            String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+                        if (snapshot.child(uid_current_user).hasChild(uid_exchanger))
+                        {
+                            AlertDialog.Builder alert = new AlertDialog.Builder(Profile_rating.this, R.style.AlertDialogCustom);
+                            alert.setCancelable(false);
+                            alert.setTitle("Notifications");
+                            alert.setMessage(Html.fromHtml("You already match with this user. Are you sure want to delete this information?<br><font color='#FF0000'>*Suggestion: If you want to exchange with this user again you can contact via chat</font>"));
+                            alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                            alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    snapshot.child(uid_current_user).child(uid_exchanger).getRef().removeValue();
+                                    snapshot.child(uid_exchanger).child(uid_current_user).getRef().removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
 
-                            getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
+                                            reference.child(uid_current_user).child(uid_exchanger).setValue(setValue);
 
+                                            reference.child(uid_exchanger).child(uid_current_user).setValue(setValue);
+
+                                            user_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    if (snapshot.hasChild("image")) {
+                                                        String image = snapshot.child("image").getValue().toString();
+                                                        String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+
+                                                        getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
+
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
+
+
+                                            Intent chat_act_intent = new Intent(getApplicationContext(),ChatActivity.class);
+                                            chat_act_intent.putExtra("name_chatact",name);
+                                            chat_act_intent.putExtra("other_uid_chatact",uid_exchanger);
+                                            chat_act_intent.putExtra("transaction_number_ch",transaction_number);
+                                            startActivity(chat_act_intent);
+
+                                        }
+                                    });
+                                }
+                            });
+
+                            alert.show();
+                        }
+                        else
+                        {
+                            reference.child(uid_current_user).child(uid_exchanger).setValue(setValue);
+
+                            reference.child(uid_exchanger).child(uid_current_user).setValue(setValue);
+
+                            user_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.hasChild("image")) {
+                                        String image = snapshot.child("image").getValue().toString();
+                                        String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+
+                                        getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
+
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+
+
+                            Intent chat_act_intent = new Intent(getApplicationContext(),ChatActivity.class);
+                            chat_act_intent.putExtra("name_chatact",name);
+                            chat_act_intent.putExtra("other_uid_chatact",uid_exchanger);
+                            chat_act_intent.putExtra("transaction_number_ch",transaction_number);
+                            startActivity(chat_act_intent);
                         }
                     }
 
@@ -174,13 +253,34 @@ public class Profile_rating extends AppCompatActivity {
 
                     }
                 });
-
-
-                Intent chat_act_intent = new Intent(getApplicationContext(),ChatActivity.class);
-                chat_act_intent.putExtra("name_chatact",name);
-                chat_act_intent.putExtra("other_uid_chatact",uid_exchanger);
-                chat_act_intent.putExtra("transaction_number_ch",transaction_number);
-                startActivity(chat_act_intent);
+//                reference.child(uid_current_user).child(uid_exchanger).setValue(setValue);
+//
+//                reference.child(uid_exchanger).child(uid_current_user).setValue(setValue);
+//
+//                user_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        if (snapshot.hasChild("image")) {
+//                            String image = snapshot.child("image").getValue().toString();
+//                            String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+//
+//                            getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
+//
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
+//
+//
+//                Intent chat_act_intent = new Intent(getApplicationContext(),ChatActivity.class);
+//                chat_act_intent.putExtra("name_chatact",name);
+//                chat_act_intent.putExtra("other_uid_chatact",uid_exchanger);
+//                chat_act_intent.putExtra("transaction_number_ch",transaction_number);
+//                startActivity(chat_act_intent);
             }
         });
 
@@ -193,8 +293,6 @@ public class Profile_rating extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
 
 
     }

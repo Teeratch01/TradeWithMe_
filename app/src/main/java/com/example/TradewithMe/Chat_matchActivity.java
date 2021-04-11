@@ -10,8 +10,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -86,7 +90,7 @@ public class Chat_matchActivity extends AppCompatActivity {
     ImageButton SendMessageButton,SendLocationButton,SendImageButton;
     EditText MessageInputText;
     FirebaseAuth firebaseAuth;
-    DatabaseReference rootRef,record_ref,success_ref,matched_ref,feedback_ref,contact_ref;
+    DatabaseReference rootRef,record_ref,success_ref,matched_ref,feedback_ref,contact_ref,currency_ref;
     StorageReference firebaseStorage;
     MessageAdapter messageAdapter;
     RecyclerView userMessageList;
@@ -105,6 +109,10 @@ public class Chat_matchActivity extends AppCompatActivity {
     private byte encryptionKey[] = {9,115,51,86,105,4,-31,-23,-68,88,17,20,3,-105,119,-53};
     private Cipher cipher,deciper;
     private SecretKeySpec secretKeySpec;
+
+    //cancle notification
+    String ns = Context.NOTIFICATION_SERVICE;
+    NotificationManager mNotificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -268,6 +276,7 @@ public class Chat_matchActivity extends AppCompatActivity {
         matched_ref = FirebaseDatabase.getInstance().getReference("Matched_user");
         feedback_ref = FirebaseDatabase.getInstance().getReference("Feedback");
         contact_ref = FirebaseDatabase.getInstance().getReference("Contacts");
+        currency_ref = FirebaseDatabase.getInstance().getReference("Currency");
         record_ref.child(messagesenderID).child("Success").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -284,6 +293,7 @@ public class Chat_matchActivity extends AppCompatActivity {
             }
         });
 
+        //Check the number of success record in the firebase
         record_ref.child(messagereceiverID).child("Success").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -300,6 +310,7 @@ public class Chat_matchActivity extends AppCompatActivity {
             }
         });
 
+        //Check the number of feedback in the firebase
         feedback_ref.child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -315,6 +326,8 @@ public class Chat_matchActivity extends AppCompatActivity {
 
             }
         });
+
+        //Success section
         success_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -347,6 +360,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists())
                         {
+                            //Check the other exchanger mathc with you or not
                             if (!snapshot.child(messagereceiverID).hasChild(messagesenderID))
                             {
                                 AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
@@ -368,6 +382,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                             }
                             else {
 //                                record_ref.child(messagesenderID).child("Success").child(String.valueOf(maxIdsender+1)).setValue(setValuesender);
+                                //Add the success data to firebase to make the notify the other exchanger that the other side want to success the transaction
                                 success_ref.child(messagereceiverID).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -384,6 +399,7 @@ public class Chat_matchActivity extends AppCompatActivity {
                                     }
                                 });
 
+                                //When give a rating and feedback(optional) successfully and click on submit button
                                 Update_rank_btn.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -391,6 +407,8 @@ public class Chat_matchActivity extends AppCompatActivity {
 //                        rankDailog.dismiss();
                                         Log.d("check_rating", String.valueOf(ratingBar.getRating()));
                                         Float user_rating = ratingBar.getRating();
+
+                                        //Check if the user does't rate yet
                                         if (user_rating == 0.0) {
                                             Toast.makeText(Chat_matchActivity.this, "Plesee rate to the other exchanger", Toast.LENGTH_SHORT).show();
                                         } else {
@@ -564,6 +582,9 @@ public class Chat_matchActivity extends AppCompatActivity {
             }
         });
 
+        mNotificationManager = (NotificationManager) getSystemService(ns);
+        mNotificationManager.cancelAll();
+
     }
 
     @Override
@@ -668,10 +689,6 @@ public class Chat_matchActivity extends AppCompatActivity {
                                                                         }
                                                                     });
 
-//                                                                    HashMap map = new HashMap();
-//                                                                    map.put("Transaction_num","");
-//                                                                    contact_ref.child(messagesenderID).child(messagereceiverID).updateChildren(map);
-//                                                                    contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
 
                                                                     FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
                                                                     FirebaseDatabase.getInstance().getReference("Success_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
@@ -821,11 +838,28 @@ public class Chat_matchActivity extends AppCompatActivity {
                                         }
                                     });
                                 }
+                                mNotificationManager.cancelAll();
                             }
-                        });
 
-                        if (!isFinishing()) {
-                            // show popup
+
+                        });
+//
+//                        ArrayList<String> runningactivities = new ArrayList<String>();
+//
+//                        ActivityManager activityManager = (ActivityManager)getBaseContext().getSystemService (Context.ACTIVITY_SERVICE);
+//
+//                        List<ActivityManager.RunningTaskInfo> services = activityManager.getRunningTasks(Integer.MAX_VALUE);
+//
+//                        for (int i1 = 0; i1 < services.size(); i1++) {
+//                            runningactivities.add(0,services.get(i1).topActivity.toString());
+//                        }
+//                        if(runningactivities.contains("ComponentInfo{com.app/com.app.main.MyActivity}")==true){
+//
+//                            rankDailog.show();
+//                        }
+
+                        if (!((Activity) Chat_matchActivity.this).isFinishing()) {
+//                             show popup
                             rankDailog.show();
                         }
 
@@ -843,6 +877,8 @@ public class Chat_matchActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.child(messagesenderID).child(messagereceiverID).hasChild("Decline request"))
                 {
+
+                    Log.d("check_currency_exist11","cehck_exist");
                     AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this,R.style.AlertDialogCustom);
                     alert.setCancelable(false);
                     alert.setTitle("Notifications");
@@ -866,6 +902,106 @@ public class Chat_matchActivity extends AppCompatActivity {
                         alert.show();
                     }
                 }
+                else if (!snapshot.child(messagesenderID).child(messagereceiverID).hasChild("Decline request")){
+
+                    Log.d("check_currency_exist","cehck_exist");
+                    currency_ref.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.child(transaction_num).child("matched").getValue().equals("no"))
+                            {
+                                if (snapshot.child(transaction_num).child("uid").getValue().equals(messagesenderID))
+                                {
+                                    Log.d("check_currency_exist",snapshot.child(transaction_num).child("uid").getValue().toString());
+                                    AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
+                                    alert.setCancelable(false);
+                                    alert.setTitle("Notification");
+                                    alert.setMessage("You edit the transaction. Please contact to the user that you are already match again");
+
+                                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(Chat_matchActivity.this,ChatActivity.class);
+                                            intent.putExtra("name_chatact",name_fromchat);
+                                            intent.putExtra("other_uid_chatact",messagereceiverID);
+                                            intent.putExtra("transaction_number_ch",transaction_num);
+                                            startActivity(intent);
+
+                                            FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    if (snapshot.hasChild("image")){
+                                                        String image = snapshot.child("image").getValue().toString();
+                                                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                        getToken(name+" has edit the transaction.Please contact the user again.",messagesenderID,image,messagereceiverID,name);
+                                                    }
+                                                    else if (!snapshot.hasChild("image")){
+                                                        String image = "";
+                                                        String name = snapshot.child("firstname").getValue().toString()+" "+snapshot.child("lastname").getValue().toString();
+                                                        getToken(name+" has edit the transaction.Please contact the user again.",messagesenderID,image,messagereceiverID,name);
+                                                    }
+
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
+
+                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagereceiverID).child(messagesenderID).getRef().removeValue();
+
+                                            HashMap map = new HashMap();
+                                            map.put("transaction_edit","yes");
+                                            contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                                    if (!isFinishing()) {
+                                    // show popup
+                                    alert.show();
+                                }
+                                }
+                                else
+                                {
+                                    AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
+                                    alert.setCancelable(false);
+                                    alert.setTitle("Notification");
+                                    alert.setMessage(name_fromchat+" has already edit the transaction. Please contact to the user that you are already match again");
+
+                                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(Chat_matchActivity.this,ChatActivity.class);
+                                            intent.putExtra("name_chatact",name_fromchat);
+                                            intent.putExtra("other_uid_chatact",messagereceiverID);
+                                            intent.putExtra("transaction_number_ch",transaction_num);
+                                            startActivity(intent);
+
+                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                            FirebaseDatabase.getInstance().getReference("Matched_user").child(messagereceiverID).child(messagesenderID).getRef().removeValue();
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                                    if (!isFinishing()) {
+                                        // show popup
+                                        alert.show();
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
             }
 
             @Override
@@ -873,6 +1009,10 @@ public class Chat_matchActivity extends AppCompatActivity {
 
             }
         });
+
+
+
+
     }
 
 

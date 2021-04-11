@@ -290,7 +290,6 @@ public class Exchange_act extends Fragment {
                                     matched
                             );
 
-
                             databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -306,31 +305,87 @@ public class Exchange_act extends Fragment {
 
                                         }
                                         if (key != null) {
-                                            HashMap<String, Object> currencyMap = new HashMap<>();
-                                            currencyMap.put("amount", amount_text);
-                                            currencyMap.put("rates", rates_text);
-                                            currencyMap.put("latitude", latitude);
-                                            currencyMap.put("longitude", longitude);
-                                            databaseReference.child(key).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
+                                            if (snapshot.child(key).child("matched").getValue().equals("yes"))
+                                            {
+                                                AlertDialog.Builder alert = new AlertDialog.Builder(getContext(), R.style.AlertDialogCustom);
+                                                alert.setCancelable(false);
+                                                alert.setTitle("Notifications");
+                                                alert.setMessage(Html.fromHtml("You already matched with the other user with this currency are you sure want to post again?<br><font color='#FF0000'>We will delete the matching of you and the other exchanger</font>"));
+                                                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        dialog.cancel();
+                                                        currency_post_checking.setVisibility(View.GONE);
+                                                    }
+                                                });
+                                                String finalKey = key;
+                                                alert.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        HashMap<String, Object> currencyMap = new HashMap<>();
+                                                        currencyMap.put("amount", amount_text);
+                                                        currencyMap.put("rates", rates_text);
+                                                        currencyMap.put("latitude", latitude);
+                                                        currencyMap.put("longitude", longitude);
+                                                        currencyMap.put("matched", "no");
+                                                        dialog.cancel();
 
-                                                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                                                        databaseReference.child(finalKey).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
 
-                                                    alert.setCancelable(true);
-                                                    alert.setTitle("Notification");
-                                                    alert.setMessage("Update Post Successfully!");
+                                                                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-                                                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialog, int which) {
-                                                            dialog.cancel();
-                                                        }
-                                                    });
+                                                                alert.setCancelable(true);
+                                                                alert.setTitle("Notification");
+                                                                alert.setMessage("Update Post Successfully!");
 
-                                                    alert.show();
-                                                }
-                                            });
+                                                                alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                        dialog.cancel();
+                                                                    }
+                                                                });
+
+                                                                alert.show();
+                                                            }
+                                                        });
+
+
+                                                    }
+                                                });
+
+                                                alert.show();
+                                            }
+                                            else
+                                            {
+                                                HashMap<String, Object> currencyMap = new HashMap<>();
+                                                currencyMap.put("amount", amount_text);
+                                                currencyMap.put("rates", rates_text);
+                                                currencyMap.put("latitude", latitude);
+                                                currencyMap.put("longitude", longitude);
+                                                databaseReference.child(key).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                                        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                                                        alert.setCancelable(true);
+                                                        alert.setTitle("Notification");
+                                                        alert.setMessage("Update Post Successfully!");
+
+                                                        alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                dialog.cancel();
+                                                            }
+                                                        });
+
+                                                        alert.show();
+                                                    }
+                                                });
+                                            }
+
                                         } else if (key == null) {
                                             FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
@@ -452,31 +507,86 @@ public class Exchange_act extends Fragment {
 
                                     }
                                     if (key != null) {
-                                        HashMap<String, Object> currencyMap = new HashMap<>();
-                                        currencyMap.put("amount", amount_text);
-                                        currencyMap.put("rates", rates_text);
-                                        currencyMap.put("latitude", latitude);
-                                        currencyMap.put("longitude", longitude);
-                                        databaseReference.child(key).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
+                                        if (snapshot.child(key).child("matched").getValue().equals("yes"))
+                                        {
+                                            Log.d("check_currency","checkkkk");
+                                            AlertDialog.Builder alert = new AlertDialog.Builder(getContext(), R.style.AlertDialogCustom);
+                                            alert.setCancelable(false);
+                                            alert.setTitle("Notifications");
+                                            alert.setMessage(Html.fromHtml("You already matched with the other user with this currency are you sure want to post again?<br><font color='#FF0000'>We will delete the matching of you and the other exchanger</font>"));
+                                            alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.cancel();
+                                                    currency_post_checking.setVisibility(View.GONE);
+                                                }
+                                            });
+                                            String finalKey = key;
+                                            alert.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    HashMap<String, Object> currencyMap = new HashMap<>();
+                                                    currencyMap.put("amount", amount_text);
+                                                    currencyMap.put("rates", rates_text);
+                                                    currencyMap.put("latitude", latitude);
+                                                    currencyMap.put("longitude", longitude);
+                                                    currencyMap.put("matched", "no");
+                                                    dialog.cancel();
 
-                                                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                                                    databaseReference.child(finalKey).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
 
-                                                alert.setCancelable(true);
-                                                alert.setTitle("Notification");
-                                                alert.setMessage("Update Post Successfully!");
+                                                            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-                                                alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                        dialog.cancel();
-                                                    }
-                                                });
+                                                            alert.setCancelable(true);
+                                                            alert.setTitle("Notification");
+                                                            alert.setMessage("Update Post Successfully!");
 
-                                                alert.show();
-                                            }
-                                        });
+                                                            alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    dialog.cancel();
+                                                                }
+                                                            });
+
+                                                            alert.show();
+                                                        }
+                                                    });
+
+                                                }
+                                            });
+
+                                            alert.show();
+                                        }
+                                        else
+                                        {
+                                            HashMap<String, Object> currencyMap = new HashMap<>();
+                                            currencyMap.put("amount", amount_text);
+                                            currencyMap.put("rates", rates_text);
+                                            currencyMap.put("latitude", latitude);
+                                            currencyMap.put("longitude", longitude);
+                                            databaseReference.child(key).updateChildren(currencyMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                                                    alert.setCancelable(true);
+                                                    alert.setTitle("Notification");
+                                                    alert.setMessage("Update Post Successfully!");
+
+                                                    alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            dialog.cancel();
+                                                        }
+                                                    });
+
+                                                    alert.show();
+                                                }
+                                            });
+                                        }
                                     } else if (key == null) {
                                         FirebaseDatabase.getInstance().getReference("Currency").child(String.valueOf(maxid)).setValue(information).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
@@ -530,6 +640,9 @@ public class Exchange_act extends Fragment {
                     }
 
                 }
+
+                amount.setText("");
+                rates.setText("");
             }
         });
 
@@ -1115,8 +1228,6 @@ public class Exchange_act extends Fragment {
             firebaseRecyclerAdapter.notifyDataSetChanged();
 
             exchange_result.setAdapter(firebaseRecyclerAdapter);
-
-
 
             exchange_result.smoothScrollToPosition(exchange_result.getAdapter().getItemCount());
 
