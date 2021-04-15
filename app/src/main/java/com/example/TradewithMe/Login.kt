@@ -233,53 +233,69 @@ class Login : AppCompatActivity() {
                                 }
                                 alert.show()
                             } else if (snapshot.child(user_id).child("verification").value!!.equals("yes")) {
-                                val userID = mFirebaseAuth!!.currentUser?.uid
+                                var userID = mFirebaseAuth!!.currentUser?.uid
                                 val map = hashMapOf<String, String>()
                                 val deviceToken = FirebaseInstanceId.getInstance().getToken()
+                                Log.d("check_device_token_id", deviceToken.toString())
                                 map.put("token", deviceToken.toString())
                                 FirebaseDatabase.getInstance().getReference("Users").child(userID.toString()).updateChildren(map as Map<String, Any>).addOnSuccessListener {
-
-                                    if (user_id!= null)
-                                    {
-                                        user_ref.child(user_id).addValueEventListener(object : ValueEventListener {
+                                        user_ref.addValueEventListener(object : ValueEventListener {
                                             override fun onDataChange(snapshot: DataSnapshot) {
-                                                if(snapshot.exists())
+                                                var userID = mFirebaseAuth!!.currentUser?.uid.toString()
+                                                if(snapshot.child(userID).exists())
                                                 {
-                                                    if (snapshot.child("token").exists())
+                                                    if (snapshot.child(userID).child("token").exists())
                                                     {
-                                                        var token_fb: String = snapshot.child("token").getValue().toString()
+                                                        var token_fb: String = snapshot.child(userID).child("token").getValue().toString()
+
                                                         if (!token_fb!!.equals("")) {
                                                             val checkToken: String = FirebaseInstanceId.getInstance().getToken().toString()
                                                             if (!token_fb!!.equals(checkToken)) {
-                                                                if (!user_id.equals(null))
-                                                                {
-                                                                    FirebaseAuth.getInstance().signOut()
-                                                                    LoginManager.getInstance().logOut()
-                                                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-                                                                    val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
-                                                                    googleSignInClient.signOut()
+//                                                                Log.d("check_condition4", checkToken)
+//                                                                if (!user_id.equals(null))
+//                                                                {
+//                                                                    FirebaseAuth.getInstance().signOut()
+//                                                                    LoginManager.getInstance().logOut()
+//                                                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+//                                                                    val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
+//                                                                    googleSignInClient.signOut()
 
-                                                                    Log.d("check_id", user_id)
-                                                                    Log.d("check_condition", token_fb)
-                                                                    Log.d("check_condition2",checkToken)
-
-                                                                    if(!user_id.isEmpty())
+//                                                                    Log.d("check_id", user_id)
+//                                                                    Log.d("check_condition", token_fb)
+//                                                                    Log.d("check_condition2",checkToken)
+//
+                                                                    if(!userID!!.isEmpty())
                                                                     {
+                                                                        Log.d("check_uid", userID.toString())
+                                                                        FirebaseAuth.getInstance().signOut()
+                                                                        LoginManager.getInstance().logOut()
+                                                                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                                                                        val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
+                                                                        googleSignInClient.signOut()
+
                                                                         val intent = Intent(this@Login, Start::class.java)
                                                                         intent.putExtra("showDialog",true)
+                                                                        Log.d("check_id_when_done", user_id)
 //                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                                                         startActivityForResult(intent,2)
-                                                                        user_id = ""
+                                                                        userID = ""
+                                                                        Log.d("check_id_when_done2", user_id)
                                                                         token_fb = ""
 
                                                                     }
 
-                                                                }
+//                                                                }
                                                             }
+//                                                            else
+//                                                            {
+//                                                                loadingDialog.dismissdialog()
+//                                                                Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
+//                                                                val intent = Intent(this@Login, Navigation::class.java)
+//                                                                startActivity(intent)
+//                                                            }
 
                                                         }
                                                     }
-
 
                                                 }
                                             }
@@ -289,7 +305,7 @@ class Login : AppCompatActivity() {
                                             }
 
                                         })
-                                    }
+
 
                                     loadingDialog.dismissdialog()
                                     Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()

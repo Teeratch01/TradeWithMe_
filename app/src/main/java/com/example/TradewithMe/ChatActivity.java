@@ -1086,6 +1086,8 @@ public class ChatActivity extends AppCompatActivity {
                                     snapshot.child(messageSenderID).child(messageReceiverID).getRef().removeValue();
                                     dialog.cancel();
                                     mNotificationManager.cancelAll();
+                                    finish();
+                                    startActivity(getIntent());
                                 }
                             });
 
@@ -1124,7 +1126,10 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     });
 
-                    alert.show();
+                    if (!isFinishing()) {
+                        // show popup
+                        alert.show();
+                    }
                 }
 
             }
