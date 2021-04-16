@@ -251,22 +251,9 @@ class Login : AppCompatActivity() {
                                                         if (!token_fb!!.equals("")) {
                                                             val checkToken: String = FirebaseInstanceId.getInstance().getToken().toString()
                                                             if (!token_fb!!.equals(checkToken)) {
-//                                                                Log.d("check_condition4", checkToken)
-//                                                                if (!user_id.equals(null))
-//                                                                {
-//                                                                    FirebaseAuth.getInstance().signOut()
-//                                                                    LoginManager.getInstance().logOut()
-//                                                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-//                                                                    val googleSignInClient = GoogleSignIn.getClient(this@Login, gso)
-//                                                                    googleSignInClient.signOut()
 
-//                                                                    Log.d("check_id", user_id)
-//                                                                    Log.d("check_condition", token_fb)
-//                                                                    Log.d("check_condition2",checkToken)
-//
                                                                     if(!userID!!.isEmpty())
                                                                     {
-                                                                        Log.d("check_uid", userID.toString())
                                                                         FirebaseAuth.getInstance().signOut()
                                                                         LoginManager.getInstance().logOut()
                                                                         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
@@ -275,24 +262,16 @@ class Login : AppCompatActivity() {
 
                                                                         val intent = Intent(this@Login, Start::class.java)
                                                                         intent.putExtra("showDialog",true)
-                                                                        Log.d("check_id_when_done", user_id)
-//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//                                                                        Log.d("check_id_when_done", user_id)
                                                                         startActivityForResult(intent,2)
                                                                         userID = ""
-                                                                        Log.d("check_id_when_done2", user_id)
+//                                                                        Log.d("check_id_when_done2", user_id)
                                                                         token_fb = ""
 
                                                                     }
 
 //                                                                }
                                                             }
-//                                                            else
-//                                                            {
-//                                                                loadingDialog.dismissdialog()
-//                                                                Toast.makeText(this@Login, "Welcome to Trade With Me application", Toast.LENGTH_SHORT).show()
-//                                                                val intent = Intent(this@Login, Navigation::class.java)
-//                                                                startActivity(intent)
-//                                                            }
 
                                                         }
                                                     }

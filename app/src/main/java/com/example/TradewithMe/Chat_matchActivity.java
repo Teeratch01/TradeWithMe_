@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.text.Html;
 import android.text.TextUtils;
@@ -887,95 +888,100 @@ public class Chat_matchActivity extends AppCompatActivity {
                     }
                 }
                 else {
+                    if (snapshot.child(messagereceiverID).child(messagesenderID).exists()) {
+
+//                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
                     currency_ref.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot1) {
-                            if (!snapshot.child(messagesenderID).child(messagereceiverID).hasChild("Decline request")) {
                             if (snapshot1.exists()) {
                                 if (snapshot1.child(transaction_num).exists()) {
-                                if (snapshot1.child(transaction_num).child("matched").getValue().equals("no")) {
-                                    if (snapshot1.child(transaction_num).child("uid").getValue().equals(messagesenderID)) {
-                                        Log.d("check_currency_exist", snapshot1.child(transaction_num).child("uid").getValue().toString());
-                                        AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
-                                        alert.setCancelable(false);
-                                        alert.setTitle("Notification");
-                                        alert.setMessage("You edit the transaction. Please contact to the user that you are already match again");
+                                    if (snapshot1.child(transaction_num).child("matched").getValue().equals("no")) {
+                                        if (!snapshot.child(messagesenderID).child(messagereceiverID).hasChild("Decline request")) {
+                                            if (snapshot1.child(transaction_num).child("uid").getValue().equals(messagesenderID)) {
+                                                Log.d("check_currency_exist", snapshot1.child(transaction_num).child("uid").getValue().toString());
+                                                AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
+                                                alert.setCancelable(false);
+                                                alert.setTitle("Notification");
+                                                alert.setMessage("You edit the transaction. Please contact to the user that you are already match again");
 
-                                        alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(Chat_matchActivity.this, ChatActivity.class);
-                                                intent.putExtra("name_chatact", name_fromchat);
-                                                intent.putExtra("other_uid_chatact", messagereceiverID);
-                                                intent.putExtra("transaction_number_ch", transaction_num);
-                                                startActivity(intent);
-
-                                                FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
                                                     @Override
-                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                        if (snapshot.hasChild("image")) {
-                                                            String image = snapshot.child("image").getValue().toString();
-                                                            String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
-                                                            getToken(name + " has edit the transaction.Please contact the user again.", messagesenderID, image, messagereceiverID, name);
-                                                        } else if (!snapshot.hasChild("image")) {
-                                                            String image = "";
-                                                            String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
-                                                            getToken(name + " has edit the transaction.Please contact the user again.", messagesenderID, image, messagereceiverID, name);
-                                                        }
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        Intent intent = new Intent(Chat_matchActivity.this, ChatActivity.class);
+                                                        intent.putExtra("name_chatact", name_fromchat);
+                                                        intent.putExtra("other_uid_chatact", messagereceiverID);
+                                                        intent.putExtra("transaction_number_ch", transaction_num);
+                                                        startActivity(intent);
 
-                                                    }
+                                                        FirebaseDatabase.getInstance().getReference("Users").child(messagesenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                if (snapshot.hasChild("image")) {
+                                                                    String image = snapshot.child("image").getValue().toString();
+                                                                    String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+                                                                    getToken(name + " has edit the transaction.Please contact the user again.", messagesenderID, image, messagereceiverID, name);
+                                                                } else if (!snapshot.hasChild("image")) {
+                                                                    String image = "";
+                                                                    String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+                                                                    getToken(name + " has edit the transaction.Please contact the user again.", messagesenderID, image, messagereceiverID, name);
+                                                                }
 
-                                                    @Override
-                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                            }
 
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError error) {
+
+                                                            }
+                                                        });
+
+                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagereceiverID).child(messagesenderID).getRef().removeValue();
+
+                                                        HashMap map = new HashMap();
+                                                        map.put("transaction_edit", "yes");
+                                                        contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
+                                                        dialog.cancel();
                                                     }
                                                 });
 
-                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagereceiverID).child(messagesenderID).getRef().removeValue();
+                                                if (!isFinishing()) {
+                                                    // show popup
+                                                    alert.show();
+                                                }
+                                            } else {
+                                                AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
+                                                alert.setCancelable(false);
+                                                alert.setTitle("Notification");
+                                                alert.setMessage(name_fromchat + " has already edit the transaction. Please contact to the user that you are already match again");
 
-                                                HashMap map = new HashMap();
-                                                map.put("transaction_edit", "yes");
-                                                contact_ref.child(messagereceiverID).child(messagesenderID).updateChildren(map);
-                                                dialog.cancel();
+                                                alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        Intent intent = new Intent(Chat_matchActivity.this, ChatActivity.class);
+                                                        intent.putExtra("name_chatact", name_fromchat);
+                                                        intent.putExtra("other_uid_chatact", messagereceiverID);
+                                                        intent.putExtra("transaction_number_ch", transaction_num);
+                                                        startActivity(intent);
+
+                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
+                                                        FirebaseDatabase.getInstance().getReference("Matched_user").child(messagereceiverID).child(messagesenderID).getRef().removeValue();
+                                                        dialog.cancel();
+                                                    }
+                                                });
+
+                                                if (!isFinishing()) {
+                                                    // show popup
+                                                    alert.show();
+                                                }
                                             }
-                                        });
 
-                                        if (!isFinishing()) {
-                                            // show popup
-                                            alert.show();
-                                        }
-                                    } else {
-                                        AlertDialog.Builder alert = new AlertDialog.Builder(Chat_matchActivity.this);
-                                        alert.setCancelable(false);
-                                        alert.setTitle("Notification");
-                                        alert.setMessage(name_fromchat + " has already edit the transaction. Please contact to the user that you are already match again");
-
-                                        alert.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(Chat_matchActivity.this, ChatActivity.class);
-                                                intent.putExtra("name_chatact", name_fromchat);
-                                                intent.putExtra("other_uid_chatact", messagereceiverID);
-                                                intent.putExtra("transaction_number_ch", transaction_num);
-                                                startActivity(intent);
-
-                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagesenderID).child(messagereceiverID).getRef().removeValue();
-                                                FirebaseDatabase.getInstance().getReference("Matched_user").child(messagereceiverID).child(messagesenderID).getRef().removeValue();
-                                                dialog.cancel();
-                                            }
-                                        });
-
-                                        if (!isFinishing()) {
-                                            // show popup
-                                            alert.show();
                                         }
                                     }
-
                                 }
                             }
-                            }
-                        }
 
                         }
 
@@ -984,6 +990,11 @@ public class Chat_matchActivity extends AppCompatActivity {
 
                         }
                     });
+
+                }
+//                        }
+//                    },3000);
+
                 }
             }
 
