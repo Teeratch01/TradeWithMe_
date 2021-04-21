@@ -193,6 +193,13 @@ public class Profile_rating extends AppCompatActivity {
                                                         getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
 
                                                     }
+                                                    else
+                                                    {
+                                                        String image = "";
+                                                        String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+
+                                                        getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
+                                                    }
                                                 }
 
                                                 @Override
@@ -230,6 +237,13 @@ public class Profile_rating extends AppCompatActivity {
 
                                         getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
 
+                                    }
+                                    else
+                                    {
+                                        String image = "";
+                                        String name = snapshot.child("firstname").getValue().toString() + " " + snapshot.child("lastname").getValue().toString();
+
+                                        getToken(name+" want to contact with you",uid_current_user,image,uid_exchanger,name);
                                     }
                                 }
 

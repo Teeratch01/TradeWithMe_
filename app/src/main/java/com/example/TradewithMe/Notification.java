@@ -136,7 +136,12 @@ public class Notification extends Fragment {
 
             detail.setText(detail_ill);
             date.setText(date_ill);
-            Picasso.get().load(image_ill).into(profile_image);
+
+            if (!image_ill.isEmpty())
+            {
+                Picasso.get().load(image_ill).into(profile_image);
+            }
+
         }
 
     }
